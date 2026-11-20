@@ -574,8 +574,9 @@ function defaults(g){
 const forG=a=>a.filter(x=>!x.g||x.g.includes(s.gender));
 let name='', s=defaults('f');
 const store={get(){try{return JSON.parse(localStorage.getItem('tsh-gm90b')||'null')}catch(e){return null}},
-  set(){try{localStorage.setItem('tsh-gm90b',JSON.stringify({name,s}))}catch(e){}}};
-const saved=store.get(); if(saved&&saved.s){name=saved.name||'';s={...defaults(saved.s.gender),...saved.s}}
+  set(){}};
+// Every visit starts fresh: no remembered name or character. Clear anything older versions stored.
+try{['tsh-gm','tsh-gm90','tsh-gm90b'].forEach(k=>localStorage.removeItem(k))}catch(e){}
 let theme=pref.get('tsh-theme','light');
 let musicWanted=pref.get('tsh-music','on')==='on';
 
@@ -754,8 +755,6 @@ $('#b-dl').onclick=async()=>{
   const a=document.createElement('a');a.download=fn;a.href=URL.createObjectURL(blob);a.click();
 };
 
-/* dev: #name / #gender / #custom / #done (+ ?tab=N) jumps to a screen */
-if(location.hash){const h=location.hash.slice(1);if(['name','gender','custom','done'].includes(h)){if(!name)name='Raka';const q=new URLSearchParams(location.search);if(q.get('tab'))tab=+q.get('tab');if(q.get('g'))s=defaults(q.get('g'));if(q.get('theme')){theme=q.get('theme');applyTheme()}setTimeout(()=>go('s-'+h),50)}}
 </script>
 </body>
 </html>
