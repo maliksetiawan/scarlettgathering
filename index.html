@@ -591,9 +591,21 @@ function applyTheme(){
 }
 function applyMusicBtn(){const b=$('#b-music');b.innerHTML=Music.on?ICON_NOTE:ICON_MUTE;b.classList.toggle('off',!Music.on)}
 $('#b-theme').onclick=()=>{theme=theme==='dark'?'light':'dark';pref.set('tsh-theme',theme);applyTheme();frame();if(cur==='s-done')drawCard()};
-$('#b-music').onclick=()=>{if(Music.on){Music.stop();musicWanted=false}else{Music.start();musicWanted=true}pref.set('tsh-music',musicWanted?'on':'off');applyMusicBtn()};
+const musicPlaying=()=>Music.on&&Music.ctx&&Music.ctx.state==='running';
+$('#b-music').onclick=()=>{if(musicPlaying()){Music.stop();musicWanted=false}else{Music.start();musicWanted=true}pref.set('tsh-music',musicWanted?'on':'off');applyMusicBtn()};
 document.addEventListener('visibilitychange',()=>{if(!Music.ctx)return;if(document.hidden)Music.ctx.suspend();else if(Music.on)Music.ctx.resume()});
 applyTheme();applyMusicBtn();
+// Autoplay: try right away; browsers that hold sound until a gesture start it on the first tap/key anywhere.
+if(musicWanted){
+  Music.start();applyMusicBtn();
+  const EVTS=['pointerdown','touchstart','keydown'];
+  const unlock=e=>{
+    if(e.target&&e.target.closest&&e.target.closest('#b-music'))return;
+    EVTS.forEach(t=>document.removeEventListener(t,unlock,true));
+    if(musicWanted&&!musicPlaying()){Music.start();applyMusicBtn()}
+  };
+  EVTS.forEach(t=>document.addEventListener(t,unlock,true));
+}
 
 /* ================= BACKGROUND / STAGE ================= */
 const app=$('#app'),bg=$('#bg'),bctx=bg.getContext('2d');
