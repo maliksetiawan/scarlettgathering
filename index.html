@@ -114,7 +114,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 .ready{font-family:'Archivo',sans-serif;font-weight:900;font-size:52px;letter-spacing:-.02em;line-height:1;color:#fff;text-shadow:0 4px 0 var(--red-d),0 4px 14px rgba(0,0,0,.4);text-align:center}
 .ready-sub{font-family:'Silkscreen',monospace;font-size:13px;letter-spacing:.12em;text-align:center;color:#fff;margin-top:-6px;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 #cv-card{display:none}
-#img-card{width:74%;max-width:290px;height:auto;image-rendering:auto;box-shadow:0 0 0 2px rgba(255,255,255,.15),0 10px 30px rgba(0,0,0,.4)}
+#img-card{height:min(52vh,460px);width:auto;max-width:100%;image-rendering:auto;box-shadow:0 0 0 2px rgba(255,255,255,.15),0 10px 30px rgba(0,0,0,.4)}
 
 /* unified buttons: one height, one type size, equal widths in pairs */
 .btn,.ghost{height:48px;padding:0 20px;font-size:14px;letter-spacing:.12em;display:inline-flex;align-items:center;justify-content:center;min-width:160px;white-space:nowrap}
@@ -457,7 +457,7 @@ const THEMES={
   dark:{sky:['#120a26','#1a1033','#251543','#341b4e','#4a2256','#6a2d58','#8c3c56'],far:'#3a2150',near:'#28183c',tree:'#180f28',
     ground:'#1d3326',gtop:'#2c4a34',t1:'#26412f',t2:'#16291d',thi:'#2f5139',path:'#2c231f',pathE:'#1d3326',wire:'#0b0812',glow:.32,night:true},
 };
-function drawScene(ctx,ox,oy,w,h,sc,t,gy,th){
+function drawScene(ctx,ox,oy,w,h,sc,t,gy,th,opt={}){
   const T=THEMES[th];
   const rect=(x,y,ww,hh,c)=>{ctx.fillStyle=c;ctx.fillRect(ox+Math.round(x)*sc,oy+Math.round(y)*sc,ww*sc,hh*sc)};
   const px=(x,y,c)=>rect(x,y,1,1,c);
@@ -466,7 +466,7 @@ function drawScene(ctx,ox,oy,w,h,sc,t,gy,th){
     if(b>0&&y-Math.floor(b*bh)<1)for(let x=y%2;x<w;x+=2)px(x,y,SK[b-1]);
     if(b<SK.length-1&&Math.floor((b+1)*bh)-y<=1)for(let x=(y+1)%2;x<w;x+=4)px(x,y,SK[b+1])}
   let r;
-  const mx=Math.round(w*.8),my=Math.round(gy*.2);
+  const mx=Math.round(w*(opt.sx||.8)),my=Math.round(gy*(opt.sy||.2));
   if(T.night){
     r=rng(7);const ns=Math.floor(w*gy/40);
     for(let i=0;i<ns;i++){const x=Math.floor(r()*w),y=Math.floor(r()*gy*.62),p=r()*20,on=Math.sin(t*.06+p)>.2;
@@ -715,26 +715,39 @@ $('#b-done').onclick=()=>go('s-done');
 
 /* ================= DONE CARD ================= */
 async function drawCard(){
-  try{await Promise.all(['700 30px Silkscreen','400 20px Silkscreen','900 30px Archivo','900 64px Archivo'].map(f=>document.fonts.load(f)))}catch(e){}
-  const cv=$('#cv-card');cv.width=720;cv.height=960;const x=cv.getContext('2d');
-  x.fillStyle='#0a0a0a';x.fillRect(0,0,720,960);x.textAlign='center';
-  x.fillStyle='#f5f2ec';x.font='900 30px Archivo';x.fillText('THE SCARLETT HOUSE',360,70);
-  x.fillStyle='#e0312f';x.fillRect(332,92,56,4);
-  x.save();x.beginPath();x.rect(80,112,560,600);x.clip();
-  drawScene(x,80,112,70,75,8,tick,63,theme);
-  paint(x,build(s),80+(35-17)*8,112+(70-FEET_ROW)*8,8,{shadowColor:'rgba(0,0,0,.35)'});
-  x.restore();
-  x.font='700 30px Silkscreen';const nw=Math.min(520,x.measureText(name.toUpperCase()).width+48);
-  x.fillStyle='#e0312f';x.fillRect(360-nw/2+6,690+6,nw,52);x.fillStyle='#1c1212';x.fillRect(360-nw/2,690,nw,52);
-  x.fillStyle='#fff';x.fillText(name.toUpperCase(),360,727,500);
-  x.fillStyle='#8f1715';x.font='900 64px Archivo';x.fillText("I'M READY!",360,830);
-  x.fillStyle='#f5f2ec';x.fillText("I'M READY!",360,824);
-  x.fillStyle='#e0312f';x.font='700 22px Silkscreen';x.fillText('MEMORIES GATHERING SCARLETT',360,872);
-  x.fillStyle='#8f8a84';x.font='400 18px Silkscreen';x.fillText('28-29 NOVEMBER 2026 · BANDUNG',360,910);
+  try{await Promise.all(['700 44px Silkscreen','400 30px Silkscreen','900 110px Archivo','900 130px Archivo','800 40px Archivo'].map(f=>document.fonts.load(f)))}catch(e){}
+  // Story format 1080x1920 (9:16). Key content kept clear of the top/bottom app bars.
+  const SW=1080,SH=1920,SC=12,cv=$('#cv-card');cv.width=SW;cv.height=SH;const x=cv.getContext('2d');
+  const lw=SW/SC,lh=SH/SC,fy=115,gy=fy-7;
+  drawScene(x,0,0,lw,lh,SC,tick,gy,theme,{sx:.86,sy:.52});
+  let g=x.createLinearGradient(0,0,0,760);g.addColorStop(0,'rgba(10,6,20,.78)');g.addColorStop(1,'rgba(10,6,20,0)');x.fillStyle=g;x.fillRect(0,0,SW,760);
+  g=x.createLinearGradient(0,1300,0,SH);g.addColorStop(0,'rgba(10,6,20,0)');g.addColorStop(.35,'rgba(10,6,20,.72)');g.addColorStop(1,'rgba(10,6,20,.9)');x.fillStyle=g;x.fillRect(0,1300,SW,SH-1300);
+  paint(x,build(s),(Math.floor(lw/2)-17)*SC,(fy-FEET_ROW)*SC,SC,{shadowColor:'rgba(0,0,0,.35)'});
+  // logo (same geometry as the page's SVG logo)
+  const k=.56,FS=200*k,EW=150*k,GAP=8*k,CAP=142*k,PITCH=200*k;
+  x.font=`900 ${FS}px Archivo`;x.textBaseline='alphabetic';
+  const wL=x.measureText('SCARL').width,wR=x.measureText('TT').width,total=wL+GAP+EW+GAP+wR,EX=(SW-total)/2+wL+GAP,top=190,base=top+CAP;
+  x.fillStyle='#f5f2ec';x.textAlign='right';
+  [['TH',0],['SCARL',1],['HOUS',2]].forEach(([t,i])=>x.fillText(t,EX-GAP,base+i*PITCH));
+  x.textAlign='left';x.fillText('TT',EX+EW+GAP,base+PITCH);
+  const bot=base+2*PITCH,n=10,bh=(bot-top)/(n*2-1)*1.04,st=(bot-top-bh)/(n-1);
+  for(let i=0;i<n;i++)x.fillRect(EX,top+i*st,EW,bh);
+  x.textAlign='center';x.shadowColor='rgba(0,0,0,.55)';x.shadowOffsetY=4;x.shadowBlur=10;
+  x.fillStyle='#e0312f';x.fillRect(SW/2-40,bot+44,80,6);
+  x.fillStyle='#f5f2ec';x.font='800 40px Archivo';x.fillText('Gathering Memories',SW/2,bot+112);
+  x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0;
+  // name plate
+  x.font='700 44px Silkscreen';const nm=(name||'').toUpperCase(),nw=Math.min(900,x.measureText(nm).width+72);
+  x.fillStyle='#e0312f';x.fillRect(SW/2-nw/2+8,1412+8,nw,76);x.fillStyle='#1c1212';x.fillRect(SW/2-nw/2,1412,nw,76);
+  x.fillStyle='#fff';x.fillText(nm,SW/2,1467,860);
+  // I'M READY
+  x.font='900 130px Archivo';x.fillStyle='#8f1715';x.fillText("I'M READY!",SW/2,1626);x.fillStyle='#f5f2ec';x.fillText("I'M READY!",SW/2,1616);
+  x.fillStyle='#ff4a47';x.font='700 34px Silkscreen';x.fillText('MEMORIES GATHERING SCARLETT',SW/2,1680,980);
+  x.fillStyle='#d8d2dc';x.font='400 28px Silkscreen';x.fillText('28-29 NOVEMBER 2026 · BANDUNG',SW/2,1726,980);
   $('#img-card').src=cv.toDataURL('image/png');
 }
 $('#b-dl').onclick=async()=>{
-  const fn='im-ready-'+(name||'karakter').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.png';
+  const fn='im-ready-'+(name||'karakter').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-story.png';
   const blob=await new Promise(r=>$('#cv-card').toBlob(r,'image/png'));
   let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null}catch(e){}
   if(dl){try{await dl.save({filename:fn,data:blob});$('#dl-hint').textContent='TERSIMPAN!'}catch(e){if(e&&e.code!=='declined')$('#dl-hint').textContent='TEKAN LAMA GAMBAR UNTUK SIMPAN'}return}
