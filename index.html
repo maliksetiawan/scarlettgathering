@@ -305,6 +305,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
     <button class="btn" id="b-dl">UNDUH</button>
   </div>
   <button class="btn wide" id="b-world">MASUK KE VILLA ▸</button>
+  <button class="ghost sm" id="b-new">BUAT KARAKTER BARU</button>
 </section>
 
 <!-- 6. CAMP (small open world) -->
@@ -352,11 +353,11 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 <section id="s-run" class="screen">
   <div class="r-hud" id="r-hud" hidden>
     <div class="r-top"><div><b id="r-m">0 M</b><span id="r-b"></span></div><div class="r-c">KASET <b id="r-c">0</b></div></div>
-    <div class="r-meter"><span>ACA</span><div><i id="r-danger"></i></div></div><div class="r-pw" id="r-pw"></div>
+    <div class="r-meter"><span>BANTENG</span><div><i id="r-danger"></i></div></div><div class="r-pw" id="r-pw"></div>
   </div>
   <div class="r-bub" id="r-bub" hidden></div><div class="r-toast" id="r-toast" hidden></div>
   <div class="r-panel" id="r-menu"><button class="ghost sm r-back" id="r-back">← VILLA</button><canvas id="r-face"></canvas><div class="r-title">DIKEJAR KEJAR<br><em id="r-who">ACA</em></div>
-    <p class="sub">Kamu telat ke gathering dan Aca udah ngejar. Kabur lewat atap angkot!</p><div class="r-how"><span>← → PINDAH JALUR</span><span>↑ LOMPAT</span><span>↓ ROLL · NAIK RAMP KE ATAP ANGKOT</span></div><div class="hint" id="r-best"></div><button class="btn" id="r-start">MULAI LARI</button><button class="ghost" id="r-lb">PAPAN SKOR</button></div>
+    <p class="sub">Kamu telat ke gathering dan banteng Aca udah ngejar. Kabur lewat atap angkot!</p><div class="r-how"><span>← → PINDAH JALUR</span><span>↑ LOMPAT</span><span>↓ ROLL · NAIK RAMP KE ATAP ANGKOT</span></div><div class="hint" id="r-best"></div><button class="btn" id="r-start">MULAI LARI</button><button class="ghost" id="r-lb">PAPAN SKOR</button></div>
   <div class="r-panel" id="r-over" hidden><canvas id="r-final" hidden></canvas><img id="r-img" alt="Hasil Dikejar Kejar Aca"><div class="hint" id="r-res"></div><div class="hint r-save" id="r-save"></div><div class="row"><button class="ghost" id="r-again">LARI LAGI</button><button class="btn" id="r-dl">UNDUH</button></div><button class="ghost r-lbb" id="r-lb2">PAPAN SKOR</button><button class="btn wide" id="r-camp">KEMBALI KE VILLA</button></div>
 </section>
 
@@ -773,6 +774,8 @@ const store={get(){try{return JSON.parse(localStorage.getItem('tsh-gm90b')||'nul
   set(){}};
 // Every visit starts fresh: no remembered name or character. Clear anything older versions stored.
 try{['tsh-gm','tsh-gm90','tsh-gm90b'].forEach(k=>localStorage.removeItem(k))}catch(e){}
+const saved={read(){try{return JSON.parse(localStorage.getItem('tsh-char-v1')||'null')}catch(e){return null}},write(){try{localStorage.setItem('tsh-char-v1',JSON.stringify({name,look:s}))}catch(e){}},clear(){try{localStorage.removeItem('tsh-char-v1')}catch(e){}}};
+let hasChar=false;
 let theme=pref.get('tsh-theme','light');
 let musicWanted=pref.get('tsh-music','on')==='on';
 
@@ -838,13 +841,13 @@ function go(id){
   if(id==='s-name'){$('#in-name').value=name;validate()}
   if(id==='s-gender'){$('#hi').textContent=name;document.querySelectorAll('.gcard').forEach(b=>drawTo(b.querySelector('canvas'),defaults(b.dataset.g),4))}
   if(id==='s-custom'){$('#nt').textContent=name;renderTabs();renderPanel()}
-  if(id==='s-done'){drawCard()}
+  if(id==='s-done'){saved.write();hasChar=true;drawCard()}
   if(id==='s-world')World.start();else World.stop();
   if(id==='s-run')Run.open();else Run.stop();
   frame();
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
-$('#b-join').onclick=()=>{if(musicWanted&&!Music.on){Music.start();applyMusicBtn()}go('s-name')};
+$('#b-join').onclick=()=>{if(musicWanted&&!Music.on){Music.start();applyMusicBtn()}go(hasChar?'s-done':'s-name')};
 const validate=()=>{$('#b-name').disabled=!$('#in-name').value.trim()};
 $('#in-name').oninput=validate;
 const submitName=()=>{const v=$('#in-name').value.trim();if(!v)return;name=v;$('#in-name').blur();store.set();go('s-gender')};
@@ -1644,6 +1647,24 @@ const Run=(()=>{
   let X=null,state='menu',raf=0,last=0,T=0,dist=0,coins=0,lane=1,px=0,py=0,vy=0,slide=0,stumble=0,inv=0,slow=1,mag=0,roller=0,shield=0,timer=0,danger=0,nextSeg=0,floorY=0,bonus=0,mult=0,spring=0,gap=0,curSp=0,jumpQ=0,lastPx=0,rocket=0,segs=[],objs=[],best=+pref.get('tsh-run-best','0')||0,drag=null;
   const meters=()=>Math.floor(dist/M2U),score=()=>meters()+coins*10;
   const acaI=()=>ROSTER.findIndex(r=>r.n==='Aca'),isAca=()=>rosterSelf()===acaI(),acaName=()=>isAca()?'ACA KW':'ACA';
+  /* The chaser: a blocky charging bull, nose toward -z like the runner. */
+  function makeBull(scene){const T3=THREE,root=new T3.Group(),rig=new T3.Group(),mats={},mat=c=>mats[c]||(mats[c]=new T3.MeshLambertMaterial({color:c})),B=(p,w,h,d,c,x,y,z)=>{const e=new T3.Mesh(new T3.BoxGeometry(w,h,d),mat(c));e.position.set(x,y,z);e.castShadow=true;p.add(e);return e},pivot=(p,x,y,z)=>{const g=new T3.Group();g.position.set(x,y,z);p.add(g);return g};
+    const FUR='#4a2c1d',DARK='#2c1a12',MUZ='#c79a7d',HORN='#f4ead2',TIP='#2a1f1a';rig.position.z=14;root.add(rig);scene.add(root);
+    const body=pivot(rig,0,35,0);B(body,25,24,48,FUR,0,0,5);B(body,30,31,24,DARK,0,3,-15);B(body,18,5,24,DARK,0,14,-12);
+    const head=pivot(body,0,6,-27);B(head,21,20,20,FUR,0,0,-10);B(head,17,11,9,MUZ,0,-5,-23);B(head,12,4,1,DARK,0,-3,-27.6);B(head,6,6,1.2,'#e6b23a',0,-10,-27.4);B(head,3,3,1.8,MUZ,0,-10,-27.4);
+    [-1,1].forEach(q=>{B(head,5,4,1,'#f4f1ea',q*6.5,4,-20.4);B(head,2.4,3,1.2,'#e0312f',q*5.6,3.6,-20.6);B(head,7,2.2,1.4,TIP,q*6,7,-20.5);B(head,6,4,4,DARK,q*13,3,-7);B(head,9,5,5,HORN,q*14,10,-11);B(head,5,9,5,HORN,q*18,16,-11);B(head,3,6,3,TIP,q*18,23,-11)});
+    const legs=[[-9,-20],[9,-20],[-9,25],[9,25]].map(([x,z])=>{const g=pivot(rig,x,24,z);B(g,9,16,10,FUR,0,-7,0);B(g,7,8,8,DARK,0,-18,0);B(g,8,3,9,TIP,0,-22.5,0);return g});
+    const tail=pivot(body,0,9,29);B(tail,2.4,18,2.4,DARK,0,-9,0);B(tail,5,7,5,TIP,0,-20,0);
+    return {root,body,head,legs,tail,ph:0}}
+  function poseBull(b,dt,sp,charging){b.ph+=dt*(9+sp*.045);const t=b.ph,PH=[0,.65,Math.PI,Math.PI+.65];b.legs.forEach((l,i)=>l.rotation.x=Math.sin(t+PH[i])*.95);b.body.position.y=35+Math.abs(Math.sin(t))*3.2;b.body.rotation.x=Math.sin(t)*.075;b.head.rotation.x=(charging?-.34:-.14)+Math.cos(t)*.1;b.tail.rotation.x=-.75+Math.sin(t*.8)*.34;b.tail.rotation.z=Math.cos(t*.8)*.25}
+  const BULL_FACE=["T...........","HT..........","HH..........","HHH.........",".HHH....DDDD","..HHHBBBBBBB","...HHBBBBDDD","DD..BDDBBBBB","BBDBBBDDDBBB",".DDBBWWDBBBB","...BBRWWBBBB","....BBBBBBBB",".....BBBBBBB",".....MMMMMMM","....MMMMMMMM","....MMNNMMMM","....MMNNMMMM",".....MMMMGMM","......MMMGGG",".......MMMMM"].map(r=>r+[...r].reverse().join(''));
+  const BULL_C={T:'#2a1f1a',H:'#f4ead2',B:'#4a2c1d',D:'#2c1a12',M:'#c79a7d',W:'#f4f1ea',R:'#e0312f',N:'#2c1a12',G:'#e6b23a'};
+  /* Full-body charging bull for the result card, facing the runner on its left. */
+  function drawBullCharge(x,ox,oy,sc){const F='#4a2c1d',D='#2c1a12',L='#6b4029',M='#c79a7d',H='#f4ead2',T='#2a1f1a',W=84,HH=58,c=document.createElement('canvas');c.width=W;c.height=HH;const q=c.getContext('2d'),r=(a,b,w,h,col)=>{q.fillStyle=col;q.fillRect(a,b,w,h)};
+    [[73,16,4,3,D],[76,9,2,10,D],[74,4,6,6,T],[64,37,8,8,D],[71,43,7,7,D],[75,50,8,4,T],[50,38,8,11,D],[48,49,10,4,T],[29,40,7,11,D],[29,51,9,4,T],[44,18,30,22,F],[30,16,20,24,F],[20,10,24,30,D],[24,7,16,5,D],[32,36,40,4,D],[46,19,24,2,L],[32,18,12,2,L],[14,41,8,8,F],[10,49,10,4,T],[24,17,6,4,D],[6,18,20,18,F],[12,15,14,5,D],[14,12,8,5,H],[8,8,7,5,H],[4,3,6,6,H],[2,0,4,4,T],[1,30,13,10,M],[3,33,3,2,D],[2,38,9,1,'#7a4a3a'],[5,40,5,1,'#e6b23a'],[5,40,1,3,'#e6b23a'],[9,40,1,3,'#e6b23a'],[5,43,5,1,'#e6b23a'],[11,21,7,2,T],[13,23,4,3,'#f4f1ea'],[13,24,2,2,'#e0312f']].forEach(a=>r(...a));
+    const px=q.getImageData(0,0,W,HH).data,on=(a,b)=>a>=0&&b>=0&&a<W&&b<HH&&px[(b*W+a)*4+3]>0;x.fillStyle='#1c1212';for(let b=-1;b<=HH;b++)for(let a=-1;a<=W;a++)if(!on(a,b)&&(on(a-1,b)||on(a+1,b)||on(a,b-1)||on(a,b+1)))x.fillRect(ox+a*sc,oy+b*sc,sc,sc);
+    x.imageSmoothingEnabled=false;x.drawImage(c,ox,oy,W*sc,HH*sc);x.fillStyle='rgba(245,242,236,.75)';[[-5,31,3],[-9,28,2],[-7,36,2],[60,54,4],[66,52,3],[40,54,3]].forEach(([a,b,s])=>x.fillRect(ox+a*sc,oy+b*sc,s*sc,s*sc))}
+  function drawBullFace(q,ox,oy,sc){BULL_FACE.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='.')return;q.fillStyle='#1c1212';q.fillRect(ox+(x-1)*sc,oy+(y-1)*sc,sc*3,sc*3)}));BULL_FACE.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='.')return;q.fillStyle=BULL_C[c];q.fillRect(ox+x*sc,oy+y*sc,sc,sc)}))}
   function init(){
     const T3=THREE,renderer=new T3.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(1);renderer.domElement.className='run-gl';$r('#s-run').insertBefore(renderer.domElement,$r('#s-run').firstChild);
     const scene=new T3.Scene();scene.background=new T3.Color('#8fd0f2');scene.fog=new T3.Fog('#8fd0f2',260,1050);
@@ -1716,15 +1737,15 @@ const Run=(()=>{
   const show=(id)=>['menu','hud','over'].forEach(k=>$r('#r-'+k).hidden=k!==id);
   function reset(){
     X.world.clear();segs=[];objs=[];dist=0;coins=0;lane=1;px=0;py=0;vy=0;slide=0;stumble=0;inv=0;slow=1;mag=0;roller=0;shield=0;danger=0;nextSeg=0;floorY=0;bonus=0;mult=0;spring=0;gap=0;curSp=132;jumpQ=0;lastPx=0;rocket=0;T=0;for(let k=-3;k<NSEG;k++)buildSeg(k);nextSeg=NSEG;
-    const pk=JSON.stringify(s);if(X.pk!==pk){dropRig(X.pr);X.pr=makeRig(s,X.scene);addRocket(X.pr);X.pk=pk}if(!X.ar)X.ar=makeRig(rosterLook(acaI()),X.scene);
+    const pk=JSON.stringify(s);if(X.pk!==pk){dropRig(X.pr);X.pr=makeRig(s,X.scene);addRocket(X.pr);X.pk=pk}if(!X.ar)X.ar=makeBull(X.scene);
   }
-  function play(){reset();state='intro';timer=1.9;show('hud');$r('#r-bub').hidden=false;$r('#r-bub').textContent=acaName()+': WOI, TUNGGUIN!';$r('#r-danger').style.width='100%';cancelAnimationFrame(raf);last=0;raf=requestAnimationFrame(loop)}
+  function play(){reset();state='intro';timer=1.9;show('hud');$r('#r-bub').hidden=false;$r('#r-bub').textContent='BANTENG ACA: MOOOH!';$r('#r-danger').style.width='100%';cancelAnimationFrame(raf);last=0;raf=requestAnimationFrame(loop)}
   function move(d){if(state!=='run')return;const n=Math.max(0,Math.min(2,lane+d));if(n===lane)return;if(heightAt(n,true)>py+8){hit();return}lane=n;beep([70],.03)}
   function jump(){if(state!=='run'||rocket>0)return;if(py<=floorY+.6){vy=spring>0?252:176;slide=0;jumpQ=0;beep([76,83],.05)}else jumpQ=.15}
   function duck(){if(state!=='run'||rocket>0)return;if(py>floorY+.6)vy=-260;slide=.72;beep([62],.05)}
   function hit(hard){if(inv>0||roller>0||rocket>0)return;if(shield>0){shield=0;inv=1.1;toast('JAKET FLANEL NYELAMETIN KAMU!');beep([60,67]);return}
-    if(hard||stumble>0)return caught();stumble=7;inv=1.2;slow=.55;toast(acaName()+' MAKIN DEKET!');beep([52,48],.14)}
-  function caught(){state='caught';timer=1.5;$r('#r-bub').hidden=false;$r('#r-bub').textContent='KETANGKEP '+acaName()+'!';beep([64,60,55,48],.18)}
+    if(hard||stumble>0)return caught();stumble=7;inv=1.2;slow=.55;toast('BANTENG MAKIN DEKET!');beep([52,48],.14)}
+  function caught(){state='caught';timer=1.5;$r('#r-bub').hidden=false;$r('#r-bub').textContent='KESERUDUK BANTENG!';beep([64,60,55,48],.18)}
   let toastT=0;const toast=t=>{const e=$r('#r-toast');e.textContent=t;e.hidden=false;toastT=1.5};
   function update(dt){
     T+=dt;if(toastT>0&&(toastT-=dt)<=0)$r('#r-toast').hidden=true;
@@ -1737,7 +1758,7 @@ const Run=(()=>{
         if(o.type==='veh'){if(!o.ramp&&!o.hit&&o.lane===lane&&wz>=0&&wz<=step+2&&py<o.h-7){o.hit=true;hit(true)}return}
         if(o.kind==='ob'){if(o.hit||wz<-7||wz>7+step)return;if(o.lane!=='all'&&Math.abs(o.x-px)>15)return;
           if((o.type==='low'&&py>13)||(o.type==='high'&&slide>0))return;o.hit=true;hit()}
-        else if(!o.got){if(o.kind==='coin'&&mag>0&&Math.abs(wz)<75&&wz<20){o.m.position.x+=(px-o.m.position.x)*Math.min(1,dt*9);o.x=o.m.position.x}
+        else if(!o.got){if(o.kind==='coin'&&mag>0&&Math.abs(wz)<75&&wz<20){const pull=Math.min(1,dt*9);o.m.position.x+=(px-o.m.position.x)*pull;o.x=o.m.position.x;o.y+=(py+14-o.y)*pull;o.m.position.y=o.y}
           if(wz>-9&&wz<9+step&&Math.abs(o.x-px)<16&&Math.abs(o.y-(py+14))<27){o.got=true;o.m.visible=false;if(o.kind==='coin'){coins+=mult>0?2:1;beep([84],.03)}else{if(o.kind==='mag'){mag=8;toast('WALKMAN: KASET KETARIK!')}if(o.kind==='roller'){roller=5;toast('SEPATU RODA: NGEBUT!')}if(o.kind==='shield'){shield=15;toast('JAKET FLANEL: TAHAN 1 TABRAKAN')}if(o.kind==='x2'){mult=12;toast('SKOR KASET x2!')}if(o.kind==='spring'){spring=10;toast('SEPATU PER: LOMPAT TINGGI!')}if(o.kind==='rocket')startRocket();beep([72,79,84])}}}
       });
       while(segs.length&&-segs[0].k*SEG-SEG+dist>430){const old=segs.shift();X.world.remove(old.g);objs=objs.filter(o=>o.seg!==old.k);buildSeg(nextSeg++)}
@@ -1761,9 +1782,9 @@ const Run=(()=>{
     X.smoke.forEach((m,i)=>{m.visible=rocket>0;if(!m.visible)return;const u=(T*1.8+i/14)%1;m.position.set(px+Math.sin(i*3.1)*(3+u*9),py+6-u*20,8+u*92);m.scale.setScalar(2.5+u*10);m.material.opacity=(1-u)*.52});
     poseRig(P,dt,rocket>0?'fly':slide>0?'slide':py>floorY+1.5?'air':'run',state==='caught'?60:curSp,tilt);
     X.p.b.position.set(px,floorY+.6,0);X.p.b.scale.setScalar(Math.max(.45,1-(py-floorY)/110));
-    const az=state==='caught'?24:state==='intro'?56:174-danger*142,ax=state==='run'?px+(lane===2?-25:25):px+(state==='caught'?24:30);
-    const R0=A.root.position;R0.x+=(ax-R0.x)*Math.min(1,dt*5);R0.z+=(az-R0.z)*Math.min(1,dt*(state==='caught'?7:4));R0.y=0;A.root.scale.setScalar(1.12);
-    const aFront=C.position.z<R0.z;faceRig(A,aFront);A.root.rotation.y=aFront?Math.PI:0;A.root.visible=X.a.b.visible=R0.z<C.position.z-8||camFront;poseRig(A,dt,'run',Math.max(150,curSp));X.a.b.position.set(R0.x,.5,R0.z);
+    const az=state==='caught'?30:state==='intro'?62:150-danger*170,ax=state==='run'?px+(lane===2?-31:31):px+(state==='caught'?26:34);
+    const R0=A.root.position;R0.x+=(ax-R0.x)*Math.min(1,dt*5);R0.z+=(az-R0.z)*Math.min(1,dt*(state==='caught'?7:4));R0.y=0;A.root.scale.setScalar(.82);
+    A.root.rotation.y=0;A.root.visible=X.a.b.visible=R0.z+32<C.position.z-4||camFront;poseBull(A,dt,Math.max(150,curSp),state==='caught'||stumble>0);X.a.b.position.set(R0.x,.5,R0.z+11);
     X.renderer.render(X.scene,C);
   }
   function loop(ts){if(state==='menu'||state==='over')return;const dt=Math.min(.05,(ts-(last||ts))/1000);last=ts;update(dt);if(state==='menu'||state==='over')return;render(dt);raf=requestAnimationFrame(loop)}
@@ -1771,11 +1792,10 @@ const Run=(()=>{
     state='over';const sc=score(),isBest=sc>best;if(isBest){best=sc;pref.set('tsh-run-best',String(best))}
     try{await Promise.all(['900 124px Archivo','800 44px Archivo','700 34px Silkscreen'].map(f=>document.fonts.load(f)))}catch(e){}
     const cv=$r('#r-final'),x=cv.getContext('2d');cv.width=1080;cv.height=1920;const g=x.createLinearGradient(0,0,0,1920);g.addColorStop(0,'#2a1447');g.addColorStop(.58,'#e0312f');g.addColorStop(.585,'#3a3640');g.addColorStop(1,'#17131b');x.fillStyle=g;x.fillRect(0,0,1080,1920);
-    x.fillStyle='#f2c94c';for(let i=0;i<3;i++)x.fillRect(516,1140+i*112,48,64);
     const paintP=(look,o,ox,oy,scale)=>{const c=document.createElement('canvas');c.width=W;c.height=H;paint(c.getContext('2d'),build(look,o),0,0,1,{shadow:false});x.imageSmoothingEnabled=false;x.drawImage(c,ox,oy,W*scale,H*scale)};
-    paintP(rosterLook(acaI()),{pose:{L:'reach'},eyes:'wink',mouth:'laugh'},450,520,17);paintP(s,{pose:{R:'peace'},eyes:'closed',mouth:'tongue'},70,740,14);
+    drawBullCharge(x,326,932,9);paintP(s,{pose:{R:'peace'},eyes:'closed',mouth:'tongue'},8,706,12);
     x.textAlign='center';x.fillStyle='#f5f2ec';x.font='900 112px Archivo, sans-serif';x.fillText('DIKEJAR KEJAR',540,190,1000);x.fillStyle='#ff4a47';x.font='900 136px Archivo, sans-serif';x.fillText(acaName(),540,320,980);
-    x.fillStyle='rgba(12,8,20,.86)';x.fillRect(90,1490,900,270);x.fillStyle='#fff';x.font='700 34px Silkscreen, monospace';x.fillText((name||'KAMU').toUpperCase()+' KETANGKEP!',540,1548,840);
+    x.fillStyle='rgba(12,8,20,.86)';x.fillRect(90,1490,900,270);x.fillStyle='#fff';x.font='700 34px Silkscreen, monospace';x.fillText((name||'KAMU').toUpperCase()+' KESERUDUK!',540,1548,840);
     x.font='900 110px Archivo, sans-serif';x.fillStyle='#f2c94c';x.fillText(meters().toLocaleString('id-ID')+' M',540,1668,820);x.fillStyle='#d8d2dc';x.font='700 26px Silkscreen, monospace';x.fillText(coins+' KASET · SKOR '+sc.toLocaleString('id-ID'),540,1728,820);
     x.fillStyle='#f5f2ec';x.font='800 40px Archivo, sans-serif';x.fillText('Gathering Memories',540,1832,900);x.font='700 22px Silkscreen, monospace';x.fillText('THE SCARLETT HOUSE · 28-29 NOV 2026',540,1874,980);
     $r('#r-img').src=cv.toDataURL('image/png');$r('#r-res').textContent=(isBest?'REKOR BARU · ':'')+'SKOR '+sc.toLocaleString('id-ID')+' · TERBAIK '+best.toLocaleString('id-ID');$r('#r-bub').hidden=true;$r('#r-toast').hidden=true;show('over');lastRun=[meters(),coins];saveScore();
@@ -1794,7 +1814,7 @@ const Run=(()=>{
   $r('#r-dl').onclick=async()=>{const blob=await new Promise(r=>$r('#r-final').toBlob(r,'image/png')),a=document.createElement('a');a.download='dikejar-kejar-aca-'+(name||'skor').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.png';a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)};
   return {
     open(){if(!window.THREE)return go('s-world');if(!X)init();state='menu';show('menu');$r('#r-bub').hidden=true;$r('#r-toast').hidden=true;$r('#r-best').textContent='SKOR TERBAIK '+best.toLocaleString('id-ID');$r('#r-who').textContent=acaName();
-      const cv=$r('#r-face');drawTo(cv,rosterLook(acaI()),5,{crop:CROP.head,shadow:false});size();reset();X.camera.position.set(0,76,104);X.look=new X.T3.Vector3(0,25,-78);X.camera.lookAt(X.look);X.renderer.render(X.scene,X.camera)},
+      const cv=$r('#r-face');cv.width=26*5;cv.height=22*5;drawBullFace(cv.getContext('2d'),5,5,5);size();reset();X.ar.root.visible=X.a.b.visible=false;X.camera.position.set(0,76,104);X.look=new X.T3.Vector3(0,25,-78);X.camera.lookAt(X.look);X.renderer.render(X.scene,X.camera)},
     stop(){if(state!=='menu')state='menu';cancelAnimationFrame(raf);drag=null},
   };
 })();
@@ -1865,7 +1885,7 @@ const Hall=(()=>{
   $h('#hall-vx').onclick=()=>{$h('#hall-view').hidden=true;viewing=null};
   $h('#hall-dl').onclick=async()=>{if(!viewing)return;const b=$h('#hall-dl');try{const blob=await(await fetch(publicUrl(viewing.path))).blob(),a=document.createElement('a');a.download='photobooth-gathering.jpg';a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}catch(e){b.textContent='GAGAL, COBA LAGI';setTimeout(()=>b.textContent='UNDUH',1800)}};
   return {
-    isOpen:()=>isOpen,refresh,
+    isOpen:()=>isOpen,refresh,clean:cleanLook,
     open(m){isOpen=true;$h('#hall').hidden=false;show(m)},
     async submit(meters,coins){const n=myName();if(!n)return 'NAMA INI TIDAK BISA DIPAKAI DI PAPAN SKOR';if(meters<=0)return '';
       const send=b=>api('/rest/v1/rpc/submit_score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}),base={p_name:n,p_meters:meters,p_coins:coins};
@@ -1876,6 +1896,8 @@ const Hall=(()=>{
       await api('/rest/v1/photos',{method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({names:names.slice(0,5),path})});await loadPhotos();paintWalls()},
   };
 })();
+{const v=saved.read(),l=v&&Hall.clean(v.look);if(l&&typeof v.name==='string'&&v.name.trim()){name=v.name.trim().slice(0,16);s=l;hasChar=true}}
+$('#b-new').onclick=()=>{saved.clear();hasChar=false;name='';s=defaults('f');go('s-name')};
 $('#r-lb').onclick=()=>Hall.open('score');$('#r-lb2').onclick=()=>Hall.open('score');
 </script>
 </body>
