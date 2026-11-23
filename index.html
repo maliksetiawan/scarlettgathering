@@ -197,7 +197,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 #r-img{height:min(46vh,430px);width:auto;max-width:100%;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
 
 /* shared walls */
-.r-lbb,.bb-pub{width:100%;max-width:340px}.bb-pub:disabled{opacity:.7}.r-save{color:#f2c94c}
+.r-lbb,.bb-pub{width:100%;max-width:340px}.bb-pub:disabled{opacity:.7}.r-save{color:#f2c94c}.r-save.retry{text-decoration:underline;cursor:pointer}.r-pick{padding:8px 12px;font-size:16px;flex:none}
 .hall{position:absolute;inset:0;z-index:20;background:#120c18;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));gap:12px}
 .hall-head{display:flex;align-items:center;justify-content:space-between;flex:none}
 .hall-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -334,7 +334,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
   <div class="r-bub" id="r-bub" hidden></div><div class="r-toast" id="r-toast" hidden></div>
   <div class="r-panel" id="r-menu"><button class="ghost sm r-back" id="r-back">← VILLA</button><canvas id="r-face"></canvas><div class="r-title">DIKEJAR KEJAR<br><em id="r-who">ACA</em></div>
     <p class="sub">Kamu telat ke gathering dan Aca udah ngejar. Kabur lewat atap angkot!</p><div class="r-how"><span>← → PINDAH JALUR</span><span>↑ LOMPAT</span><span>↓ ROLL · NAIK RAMP KE ATAP ANGKOT</span></div><div class="hint" id="r-best"></div><button class="btn" id="r-start">MULAI LARI</button><button class="ghost" id="r-lb">PAPAN SKOR</button></div>
-  <div class="r-panel" id="r-over" hidden><canvas id="r-final" hidden></canvas><img id="r-img" alt="Hasil Dikejar Kejar Aca"><div class="hint" id="r-res"></div><div class="hint r-save" id="r-save"></div><div class="row"><button class="ghost" id="r-again">LARI LAGI</button><button class="btn" id="r-dl">UNDUH</button></div><button class="ghost r-lbb" id="r-lb2">PAPAN SKOR</button><button class="btn wide" id="r-camp">KEMBALI KE VILLA</button></div>
+  <div class="r-panel" id="r-over" hidden><canvas id="r-final" hidden></canvas><img id="r-img" alt="Hasil Dikejar Kejar Aca"><div class="hint" id="r-res"></div><div class="hint r-save" id="r-save"></div><select class="field r-pick" id="r-pick" aria-label="Pilih namamu" hidden></select><div class="row"><button class="ghost" id="r-again">LARI LAGI</button><button class="btn" id="r-dl">UNDUH</button></div><button class="ghost r-lbb" id="r-lb2">PAPAN SKOR</button><button class="btn wide" id="r-camp">KEMBALI KE VILLA</button></div>
 </section>
 
 <!-- 9. SHARED WALLS -->
@@ -934,7 +934,7 @@ const ROSTER=['Selvy:f','Aca:f','Fathya:f','Dido:f','Reza:m','Padang:m','Malik:m
 const rosterCache=new Map();
 function rosterLook(i){if(rosterCache.has(i))return rosterCache.get(i);const r=rng(1000+i*17),g=ROSTER[i].g,pk=a=>a[Math.floor(r()*a.length)],fg=a=>a.filter(x=>(!x.g||x.g.includes(g))&&!x.hijab&&x.id!=='crop');
   const o=defaults(g);Object.assign(o,{hair:pk(fg(HAIR)).id,hairColor:pk(HAIRC.slice(0,14)),skin:pk(SKIN.slice(1,13)),top:pk(fg(TOPS)).id,topColor:pk(CLOTH),bottom:pk(fg(BOTTOMS)).id,bottomColor:pk(PANTS),shoes:pk(fg(SHOES)).id,shoeColor:pk(CLOTH),acc:r()<.55?[pk(g==='m'?ACC.filter(a=>a.slot!=='clip'&&a.slot!=='ear'):ACC).id]:[]});const far=(a,b)=>{const x=rgb(a),y=rgb(b);return Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2])>120};o.topColor=pk(CLOTH.filter(c=>far(c,o.skin)));o.bottomColor=pk(PANTS.filter(c=>far(c,o.skin)));if(ROSTER[i].n==='Aca')Object.assign(o,{hair:'kuncir',hairColor:'#2e2220',skin:'#e8b48a',top:'ringer',topColor:'#f4f1ea',bottom:'cutbray',bottomColor:'#4f72a8',acc:[]});rosterCache.set(i,o);return o}
-function rosterSelf(){const v=(name||'').trim().toLowerCase();if(!v)return -1;let i=ROSTER.findIndex(r=>r.n.toLowerCase()===v);if(i<0)i=ROSTER.findIndex(r=>r.n.toLowerCase().split(' ')[0]===v);return i}
+function rosterSelf(){const norm=x=>(x||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(),v=norm(name);if(!v)return -1;const first=x=>norm(x).split(' ')[0];let i=ROSTER.findIndex(r=>norm(r.n)===v);if(i<0)i=ROSTER.findIndex(r=>first(r.n)===v);if(i<0)i=ROSTER.findIndex(r=>first(r.n)===first(v));return i}
 
 /* ================= CAMP 3D: a small open world (three.js) ================= */
 const World=(()=>{
@@ -1728,8 +1728,14 @@ const Run=(()=>{
     x.fillStyle='rgba(12,8,20,.86)';x.fillRect(90,1490,900,270);x.fillStyle='#fff';x.font='700 34px Silkscreen, monospace';x.fillText((name||'KAMU').toUpperCase()+' KETANGKEP!',540,1548,840);
     x.font='900 110px Archivo, sans-serif';x.fillStyle='#f2c94c';x.fillText(meters().toLocaleString('id-ID')+' M',540,1668,820);x.fillStyle='#d8d2dc';x.font='700 26px Silkscreen, monospace';x.fillText(coins+' KASET · SKOR '+sc.toLocaleString('id-ID'),540,1728,820);
     x.fillStyle='#f5f2ec';x.font='800 40px Archivo, sans-serif';x.fillText('Gathering Memories',540,1832,900);x.font='700 22px Silkscreen, monospace';x.fillText('THE SCARLETT HOUSE · 28-29 NOV 2026',540,1874,980);
-    $r('#r-img').src=cv.toDataURL('image/png');$r('#r-res').textContent=(isBest?'REKOR BARU · ':'')+'SKOR '+sc.toLocaleString('id-ID')+' · TERBAIK '+best.toLocaleString('id-ID');$r('#r-bub').hidden=true;$r('#r-toast').hidden=true;show('over');$r('#r-save').textContent='MENYIMPAN SKOR…';Hall.submit(meters(),coins).then(m=>$r('#r-save').textContent=m);
+    $r('#r-img').src=cv.toDataURL('image/png');$r('#r-res').textContent=(isBest?'REKOR BARU · ':'')+'SKOR '+sc.toLocaleString('id-ID')+' · TERBAIK '+best.toLocaleString('id-ID');$r('#r-bub').hidden=true;$r('#r-toast').hidden=true;show('over');lastRun=[meters(),coins];saveScore();
   }
+  let lastRun=[0,0];
+  async function saveScore(){const e=$r('#r-save'),pk=$r('#r-pick');e.classList.remove('retry');
+    if(rosterSelf()<0){e.textContent='NAMA BELUM COCOK. PILIH NAMAMU:';pk.replaceChildren(new Option('Pilih nama…',''),...ROSTER.map(r=>new Option(r.n,r.n)));pk.hidden=false;return}
+    pk.hidden=true;e.textContent='MENYIMPAN SKOR…';const m=await Hall.submit(lastRun[0],lastRun[1]);if(m.startsWith('SKOR BELUM')){e.textContent=m+' · TAP ULANG';e.classList.add('retry')}else e.textContent=m}
+  $r('#r-save').onclick=()=>{if($r('#r-save').classList.contains('retry'))saveScore()};
+  $r('#r-pick').onchange=e=>{if(e.target.value){name=e.target.value;saveScore()}};
   function size(){const a=$r('#s-run');if(!X||!a.clientWidth)return;X.renderer.setSize(a.clientWidth,a.clientHeight,false);X.camera.aspect=a.clientWidth/a.clientHeight;X.camera.updateProjectionMatrix()}
   const s0=$r('#s-run');
   s0.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY,done:false}});
