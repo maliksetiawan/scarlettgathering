@@ -197,7 +197,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 #r-img{height:min(46vh,430px);width:auto;max-width:100%;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
 
 /* shared walls */
-.r-lbb,.bb-pub{width:100%;max-width:340px}.bb-pub:disabled{opacity:.7}.r-save{color:#f2c94c}.r-save.retry{text-decoration:underline;cursor:pointer}.r-pick{padding:8px 12px;font-size:16px;flex:none}
+.r-lbb,.bb-pub{width:100%;max-width:340px}.bb-pub:disabled{opacity:.7}.r-save{color:#f2c94c}.r-save.retry{text-decoration:underline;cursor:pointer}
 .hall{position:absolute;inset:0;z-index:20;background:#120c18;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));gap:12px}
 .hall-head{display:flex;align-items:center;justify-content:space-between;flex:none}
 .hall-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -334,7 +334,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
   <div class="r-bub" id="r-bub" hidden></div><div class="r-toast" id="r-toast" hidden></div>
   <div class="r-panel" id="r-menu"><button class="ghost sm r-back" id="r-back">← VILLA</button><canvas id="r-face"></canvas><div class="r-title">DIKEJAR KEJAR<br><em id="r-who">ACA</em></div>
     <p class="sub">Kamu telat ke gathering dan Aca udah ngejar. Kabur lewat atap angkot!</p><div class="r-how"><span>← → PINDAH JALUR</span><span>↑ LOMPAT</span><span>↓ ROLL · NAIK RAMP KE ATAP ANGKOT</span></div><div class="hint" id="r-best"></div><button class="btn" id="r-start">MULAI LARI</button><button class="ghost" id="r-lb">PAPAN SKOR</button></div>
-  <div class="r-panel" id="r-over" hidden><canvas id="r-final" hidden></canvas><img id="r-img" alt="Hasil Dikejar Kejar Aca"><div class="hint" id="r-res"></div><div class="hint r-save" id="r-save"></div><select class="field r-pick" id="r-pick" aria-label="Pilih namamu" hidden></select><div class="row"><button class="ghost" id="r-again">LARI LAGI</button><button class="btn" id="r-dl">UNDUH</button></div><button class="ghost r-lbb" id="r-lb2">PAPAN SKOR</button><button class="btn wide" id="r-camp">KEMBALI KE VILLA</button></div>
+  <div class="r-panel" id="r-over" hidden><canvas id="r-final" hidden></canvas><img id="r-img" alt="Hasil Dikejar Kejar Aca"><div class="hint" id="r-res"></div><div class="hint r-save" id="r-save"></div><div class="row"><button class="ghost" id="r-again">LARI LAGI</button><button class="btn" id="r-dl">UNDUH</button></div><button class="ghost r-lbb" id="r-lb2">PAPAN SKOR</button><button class="btn wide" id="r-camp">KEMBALI KE VILLA</button></div>
 </section>
 
 <!-- 9. SHARED WALLS -->
@@ -936,6 +936,52 @@ function rosterLook(i){if(rosterCache.has(i))return rosterCache.get(i);const r=r
   const o=defaults(g);Object.assign(o,{hair:pk(fg(HAIR)).id,hairColor:pk(HAIRC.slice(0,14)),skin:pk(SKIN.slice(1,13)),top:pk(fg(TOPS)).id,topColor:pk(CLOTH),bottom:pk(fg(BOTTOMS)).id,bottomColor:pk(PANTS),shoes:pk(fg(SHOES)).id,shoeColor:pk(CLOTH),acc:r()<.55?[pk(g==='m'?ACC.filter(a=>a.slot!=='clip'&&a.slot!=='ear'):ACC).id]:[]});const far=(a,b)=>{const x=rgb(a),y=rgb(b);return Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2])>120};o.topColor=pk(CLOTH.filter(c=>far(c,o.skin)));o.bottomColor=pk(PANTS.filter(c=>far(c,o.skin)));if(ROSTER[i].n==='Aca')Object.assign(o,{hair:'kuncir',hairColor:'#2e2220',skin:'#e8b48a',top:'ringer',topColor:'#f4f1ea',bottom:'cutbray',bottomColor:'#4f72a8',acc:[]});rosterCache.set(i,o);return o}
 function rosterSelf(){const norm=x=>(x||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(),v=norm(name);if(!v)return -1;const first=x=>norm(x).split(' ')[0];let i=ROSTER.findIndex(r=>norm(r.n)===v);if(i<0)i=ROSTER.findIndex(r=>first(r.n)===v);if(i<0)i=ROSTER.findIndex(r=>first(r.n)===first(v));return i}
 
+/* ================= SHARED CHARACTER RIG ================= */
+  /* Cut-out rig: the player's own pixel sprite, sliced into jointed limbs for a fluid anime run. */
+  function makeRig(look,scene){
+    const T3=THREE,fg=build(look,{}),bg=build(look,{back:true}),tg=build(look,{talk:true}),al=M.al,ar=M.ar,NAMES=['head','torso','uaL','faL','uaR','faR','thL','shL','thR','shR'];
+    const which=(dx,dy)=>{if(dy<16)return 'head';if(dy<=36&&dx<=al+1)return dy<=26?'uaL':'faL';if(dy<=36&&dx>=ar)return dy<=26?'uaR':'faR';if(dy<36)return 'torso';return dx<16?(dy<=47?'thL':'shL'):(dy<=47?'thR':'shR')};
+    const sheet=g=>{const o={};NAMES.forEach(n=>{const c=document.createElement('canvas');c.width=W;c.height=H;o[n]=c});for(let y=0;y<H;y++)for(let x=0;x<W;x++){const col=g[y*W+x];if(!col)continue;const q=o[which(x-OX,y-OY)].getContext('2d');q.fillStyle=col;q.fillRect(x,y,1,1)}
+      NAMES.forEach(n=>{const t=new T3.CanvasTexture(o[n]);t.magFilter=t.minFilter=T3.NearestFilter;t.generateMipmaps=false;o[n]=t});return o};
+    const F=sheet(fg),B=sheet(bg),Talk=(()=>{const c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d');for(let y=0;y<H;y++)for(let x=0;x<W;x++){const col=tg[y*W+x];if(col&&which(x-OX,y-OY)==='head'){q.fillStyle=col;q.fillRect(x,y,1,1)}}const t=new T3.CanvasTexture(c);t.magFilter=t.minFilter=T3.NearestFilter;t.generateMipmaps=false;return t})(),P={hip:[18,37],neck:[18,17],sL:[al+3,20],sR:[ar+2,20],eL:[al+3,29],eR:[ar+2,29],hL:[15,38],hR:[20,38],kL:[15,49],kR:[20,49]};
+    const root=new T3.Group(),meshes={},j={};scene.add(root);
+    const node=(name,parent,at,from,z=0)=>{const g=new T3.Group();g.position.set(at[0]-from[0],from[1]-at[1],z);parent.add(g);const geo=new T3.PlaneGeometry(W,H);geo.translate(W/2-at[0],at[1]-H/2,0);const m=new T3.Mesh(geo,new T3.MeshBasicMaterial({map:B[name],transparent:true,alphaTest:.5,side:T3.DoubleSide}));g.add(m);meshes[name]=m;j[name]=g;return g};
+    const pelvis=new T3.Group();pelvis.position.y=23;root.add(pelvis);
+    const torso=node('torso',pelvis,P.hip,P.hip,.3);node('head',torso,P.neck,P.hip,.5);
+    node('faL',node('uaL',torso,P.sL,P.hip,.7),P.eL,P.sL,.1);node('faR',node('uaR',torso,P.sR,P.hip,.7),P.eR,P.sR,.1);
+    node('shL',node('thL',pelvis,P.hL,P.hip,0),P.kL,P.hL,.1);node('shR',node('thR',pelvis,P.hR,P.hip,0),P.kR,P.hR,.1);
+    return {root,pelvis,j,meshes,F,B,Talk,front:false,ph:Math.random()*2,l:1}
+  }
+  function dropRig(r){if(!r)return;if(r.root.parent)r.root.parent.remove(r.root);r.Talk.dispose();Object.values(r.meshes).forEach(m=>{m.geometry.dispose();m.material.dispose()});[...Object.values(r.F),...Object.values(r.B)].forEach(t=>t.dispose())}
+  function faceRig(r,front){if(r.front===front)return;r.front=front;const S=front?r.F:r.B;Object.entries(r.meshes).forEach(([n,m])=>{m.material.map=S[n];m.material.needsUpdate=true})}
+  function poseRig(r,dt,mode,sp,tilt=0,fx=0,fz=-1){
+    r.ph+=dt*(mode==='walk'?1.2+sp*.1:mode==='idle'?1.7:8.5+sp*.036);const a=Math.sin(r.ph),c=Math.cos(r.ph),k=1-Math.exp(-dt*(mode==='run'?26:mode==='walk'?18:15)),J=r.j,set=(n,x,y=0,z=0)=>{const q=J[n].rotation;q.x+=(x-q.x)*k;q.y+=(y-q.y)*k;q.z+=(z-q.z)*k};let py=23;
+    // Natural gait: limbs swing along the walking direction as seen from the camera.
+    const Q=(n,th,side=0)=>set(n,th*-fz,0,th*fx+side);
+    if(mode==='walk'||mode==='idle'){
+      const walk=mode==='walk',sw=walk?a:0,fL=walk?.08+Math.max(0,c)*.82:.03,fR=walk?.08+Math.max(0,-c)*.82:.03,tL=.03+sw*.5,tR=.03-sw*.5,breath=walk?0:Math.sin(r.ph)*.018;
+      Q('torso',walk?-.07:-.012+breath,walk?c*.012:0);J.torso.rotation.y+=((walk?sw*.09:0)-J.torso.rotation.y)*k;Q('head',walk?.045:breath*-.7);
+      Q('thL',tL,.012);Q('shL',-fL);Q('thR',tR,-.012);Q('shR',-fR);
+      Q('uaL',-sw*.46,-.05-(walk?0:breath));Q('faL',.2+(walk?Math.max(0,-sw)*.28:.03));Q('uaR',sw*.46,.05+(walk?0:breath));Q('faR',.2+(walk?Math.max(0,sw)*.28:.03));
+      const reach=(a1,a2)=>11*Math.cos(a1)+11*Math.cos(a1+a2);py=Math.max(reach(tL,-fL),reach(tR,-fR))+.8;
+    }else if(mode==='run'){
+      const kL=Math.max(0,-a),kR=Math.max(0,a);
+      set('torso',-.34,a*.2,tilt*.5+c*.025);set('head',.2,-a*.1,-tilt*.25);
+      set('thL',.2+a*1.02,0,.05);set('shL',-.3-kL*1.75);set('thR',.2-a*1.02,0,-.05);set('shR',-.3-kR*1.75);
+      set('uaL',-a*1.05,0,-.16);set('faL',1.5+Math.max(0,a)*.42);set('uaR',a*1.05,0,.16);set('faR',1.5+Math.max(0,-a)*.42);
+      {const q=n=>J[n].rotation.x,reach=(h,s)=>11*Math.cos(q(h))+11*Math.cos(q(h)+q(s));py=Math.max(reach('thL','shL'),reach('thR','shR'))+.8+Math.abs(c)*1.3}
+    }else if(mode==='air'){
+      py=25;set('torso',-.14,0,tilt*.5);set('head',.04);set('thL',1.2);set('shL',-1.5);set('thR',-.32);set('shR',-.95);
+      set('uaL',.85,0,-.62);set('faL',.8);set('uaR',-.65,0,.62);set('faR',1.15);
+    }else if(mode==='fly'){
+      py=25;set('torso',-.72,0,tilt*.6);set('head',.5);set('thL',-.22+a*.1);set('shL',-.34);set('thR',-.22-a*.1);set('shR',-.34);set('uaL',.22,0,-.9);set('faL',.3);set('uaR',.22,0,.9);set('faR',.3);
+    }else{
+      py=11;set('torso',.92,0,tilt*.3);set('head',-.62);set('thL',1.36);set('shL',-.16);set('thR',.42);set('shR',-1.72);
+      set('uaL',-.6,0,-.4);set('faL',.3);set('uaR',-.6,0,.4);set('faR',.3);
+    }
+    r.pelvis.position.y+=(py-r.pelvis.position.y)*k;r.pelvis.rotation.y=-a*(mode==='run'?.14:mode==='walk'?.06:0);
+  }
+
 /* ================= CAMP 3D: a small open world (three.js) ================= */
 const World=(()=>{
   const MW=960,MH=720;                         // camp size; 2D (x,y) maps to 3D (x,0,z=y)
@@ -1211,7 +1257,7 @@ const World=(()=>{
     function charMesh(c){const tx=x=>tex(x);c.tx={f:[...new Set(c.set.f)].length?c.set.f.map(x=>x):[],b:[],t:null};{const mp=new Map(),one=x=>{if(!mp.has(x))mp.set(x,tx(x));return mp.get(x)};c.tx.f=c.set.f.map(one);c.tx.b=c.set.b.map(one)}
       c.mesh=new T3.Mesh(CHAR_GEO,new T3.MeshBasicMaterial({map:c.tx.f[0],transparent:true,alphaTest:.5}));
       c.blob=new T3.Mesh(BLOB,BLOBM);c.blob.position.y=.4;scene.add(c.mesh,c.blob)}
-    function dropChar(c){if(!c||!c.mesh)return;scene.remove(c.mesh,c.blob);c.mesh.material.dispose();new Set([...c.tx.f,...c.tx.b,c.tx.t].filter(Boolean)).forEach(t=>t.dispose())}
+    function dropChar(c){if(!c||!c.mesh)return;if(c.rig){dropRig(c.rig);c.rig=null}scene.remove(c.mesh,c.blob);c.mesh.material.dispose();new Set([...c.tx.f,...c.tx.b,c.tx.t].filter(Boolean)).forEach(t=>t.dispose())}
 
     G={hall:{scoreC,scoreTex,galC,galTex},pixTex:tex,renderer,scene,camera,fog,hemi,sun,SUNDIR,fireL,lantL,sky,skyGeo,sunS,moonS,stars,clouds,outerMat,mtMat,hillMat,flames,sparks,notes,itemSprites,ff,ffSeed,lamp,duck,roomL,winMat,water,charMesh,dropChar,bulbM,th:null,
       camPos:new T3.Vector3(),camLook:new T3.Vector3(),snap:true};
@@ -1268,6 +1314,7 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
     }
     player.ang+=turn*2.3*dt;
     const sp=fwd<0?.6:1;
+    player.back=fwd<0;
     moveChar(player,Math.cos(player.ang)*fwd,Math.sin(player.ang)*fwd,(cam==='fpp'?64:72)*sp,dt);
     if((player.moving||turn)&&helpT===0){helpT=1;$('#w-help').style.opacity=0}
     // talking: face each other, typewriter + mouth flaps
@@ -1300,9 +1347,10 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
 
   /* ---------- render ---------- */
   const lightAt=(x,y)=>theme!=='dark'?(inVilla(x,y)?.96:1):inVilla(x,y)?.98:Math.min(1.1,.42+Math.max(0,1-Math.hypot(x-BF.x,y-BF.y)/170)*.75+Math.max(0,1-Math.hypot(x-LANT.x,y-LANT.y)/90)*.4);
+  let rigBudget=1,frameDt=.016;
   function placeChar(c,camP,show){
     if(show&&c!==player&&cam!=='fpp'&&Math.hypot(c.x-camP.x,c.y-camP.z)<42)show=false;
-    c.mesh.visible=c.blob.visible=show;if(!show)return;
+    c.mesh.visible=c.blob.visible=show;if(!show){if(c.rig)c.rig.root.visible=false;return}
     const hop=c.hop?Math.sin(c.hop/.45*Math.PI)*10:0;
     const talking=dlg&&dlg.npc===c&&dlg.c<dlg.lines[dlg.i].length;
     c.mesh.position.set(c.x,hop+(talking?Math.abs(Math.sin(T*14))*1.2:0),c.y);c.blob.position.set(c.x,.4,c.y);
@@ -1311,6 +1359,15 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
     const front=toCam>=-.15*Math.hypot(camP.x-c.x,camP.z-c.y);
     const fr=c.moving?Math.floor(c.walk*7)%4:0;
     if(talking&&!c.tx.t)c.tx.t=G.pixTex(c.set.t());
+    // Nearby characters use the jointed rig; distant ones stay light sprites.
+    const dP=Math.hypot(c.x-player.x,c.y-player.y),wantRig=c===player||dP<175;
+    if(wantRig&&!c.rig&&(c===player||rigBudget-->0))c.rig=makeRig(c.look,G.scene);
+    if(c.rig&&wantRig){const r=c.rig,ry=c.mesh.rotation.y,tx=Math.hypot(camP.x-c.x,camP.z-c.y)||1,bk=c.back?-1:1,fw=[Math.cos(c.ang)*bk,Math.sin(c.ang)*bk],fz=(fw[0]*(camP.x-c.x)+fw[1]*(camP.z-c.y))/tx,fx=fw[0]*Math.cos(ry)-fw[1]*Math.sin(ry);
+      c.mesh.visible=false;r.root.visible=true;r.root.position.copy(c.mesh.position);r.root.rotation.y=ry;faceRig(r,front);
+      const hm=r.meshes.head.material,hw=front?(talking&&Math.floor(T*9)%2?r.Talk:r.F.head):r.B.head;if(hm.map!==hw){hm.map=hw;hm.needsUpdate=true}
+      const li=lightAt(c.x,c.y);if(Math.abs(r.l-li)>.01){r.l=li;Object.values(r.meshes).forEach(m=>m.material.color.setScalar(li))}
+      poseRig(r,frameDt,c.moving?'walk':'idle',c===player?(cam==='fpp'?64:72):26,0,fx,fz);return}
+    if(c.rig)c.rig.root.visible=false;
     const map=front?(talking&&Math.floor(T*9)%2?c.tx.t:c.tx.f[fr]):c.tx.b[fr];
     if(c.mesh.material.map!==map){c.mesh.material.map=map;c.mesh.material.needsUpdate=true}
     c.mesh.material.color.setScalar(lightAt(c.x,c.y));
@@ -1347,7 +1404,8 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
     if(G.ff.visible){const fp=G.ff.geometry.attributes.position;G.ffSeed.forEach(([x,y,z,o],i)=>fp.setXYZ(i,x+Math.sin(T*.7+o)*16,y+Math.sin(T*1.3+o*2)*6,z+Math.cos(T*.9+o)*14));fp.needsUpdate=true;G.ff.material.opacity=.6+Math.sin(T*3)*.3}
     const da=T*.22;G.duck.position.set(850+Math.cos(da)*34,1.6+Math.sin(T*2)*.5,285+Math.sin(da)*78);
     // characters
-    npcs.forEach(n=>placeChar(n,C.position,true));placeChar(player,C.position,cam!=='fpp');
+    rigBudget=1;frameDt=dt;npcs.forEach(n=>placeChar(n,C.position,true));placeChar(player,C.position,cam!=='fpp');
+    {const held=npcs.filter(n=>n.rig);if(held.length>9){const far=held.reduce((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)>Math.hypot(b.x-player.x,b.y-player.y)?a:b);if(!far.rig.root.visible){dropRig(far.rig);far.rig=null}}}
     G.renderer.render(G.scene,C);
     renderHands(dt);
     drawOverlay();
@@ -1558,42 +1616,6 @@ const Run=(()=>{
   let X=null,state='menu',raf=0,last=0,T=0,dist=0,coins=0,lane=1,px=0,py=0,vy=0,slide=0,stumble=0,inv=0,slow=1,mag=0,roller=0,shield=0,timer=0,danger=0,nextSeg=0,floorY=0,bonus=0,mult=0,spring=0,gap=0,curSp=0,jumpQ=0,lastPx=0,rocket=0,segs=[],objs=[],best=+pref.get('tsh-run-best','0')||0,drag=null;
   const meters=()=>Math.floor(dist/M2U),score=()=>meters()+coins*10;
   const acaI=()=>ROSTER.findIndex(r=>r.n==='Aca'),isAca=()=>rosterSelf()===acaI(),acaName=()=>isAca()?'ACA KW':'ACA';
-  /* Cut-out rig: the player's own pixel sprite, sliced into jointed limbs for a fluid anime run. */
-  function makeRig(look){
-    const T3=X.T3,fg=build(look,{}),bg=build(look,{back:true}),al=M.al,ar=M.ar,NAMES=['head','torso','uaL','faL','uaR','faR','thL','shL','thR','shR'];
-    const which=(dx,dy)=>{if(dy<16)return 'head';if(dy<=36&&dx<=al+1)return dy<=26?'uaL':'faL';if(dy<=36&&dx>=ar)return dy<=26?'uaR':'faR';if(dy<36)return 'torso';return dx<16?(dy<=47?'thL':'shL'):(dy<=47?'thR':'shR')};
-    const sheet=g=>{const o={};NAMES.forEach(n=>{const c=document.createElement('canvas');c.width=W;c.height=H;o[n]=c});for(let y=0;y<H;y++)for(let x=0;x<W;x++){const col=g[y*W+x];if(!col)continue;const q=o[which(x-OX,y-OY)].getContext('2d');q.fillStyle=col;q.fillRect(x,y,1,1)}
-      NAMES.forEach(n=>{const t=new T3.CanvasTexture(o[n]);t.magFilter=t.minFilter=T3.NearestFilter;t.generateMipmaps=false;o[n]=t});return o};
-    const F=sheet(fg),B=sheet(bg),P={hip:[18,37],neck:[18,17],sL:[al+3,20],sR:[ar+2,20],eL:[al+3,29],eR:[ar+2,29],hL:[15,38],hR:[20,38],kL:[15,49],kR:[20,49]};
-    const root=new T3.Group(),meshes={},j={};X.scene.add(root);
-    const node=(name,parent,at,from,z=0)=>{const g=new T3.Group();g.position.set(at[0]-from[0],from[1]-at[1],z);parent.add(g);const geo=new T3.PlaneGeometry(W,H);geo.translate(W/2-at[0],at[1]-H/2,0);const m=new T3.Mesh(geo,new T3.MeshBasicMaterial({map:B[name],transparent:true,alphaTest:.5,side:T3.DoubleSide}));g.add(m);meshes[name]=m;j[name]=g;return g};
-    const pelvis=new T3.Group();pelvis.position.y=23;root.add(pelvis);
-    const torso=node('torso',pelvis,P.hip,P.hip,.3);node('head',torso,P.neck,P.hip,.5);
-    node('faL',node('uaL',torso,P.sL,P.hip,.7),P.eL,P.sL,.1);node('faR',node('uaR',torso,P.sR,P.hip,.7),P.eR,P.sR,.1);
-    node('shL',node('thL',pelvis,P.hL,P.hip,0),P.kL,P.hL,.1);node('shR',node('thR',pelvis,P.hR,P.hip,0),P.kR,P.hR,.1);
-    return {root,pelvis,j,meshes,F,B,front:false,ph:Math.random()*2}
-  }
-  function dropRig(r){if(!r)return;X.scene.remove(r.root);Object.values(r.meshes).forEach(m=>{m.geometry.dispose();m.material.dispose()});[...Object.values(r.F),...Object.values(r.B)].forEach(t=>t.dispose())}
-  function faceRig(r,front){if(r.front===front)return;r.front=front;const S=front?r.F:r.B;Object.entries(r.meshes).forEach(([n,m])=>{m.material.map=S[n];m.material.needsUpdate=true})}
-  function poseRig(r,dt,mode,sp,tilt=0){
-    r.ph+=dt*(8.5+sp*.036);const a=Math.sin(r.ph),c=Math.cos(r.ph),k=1-Math.exp(-dt*(mode==='run'?26:15)),J=r.j,set=(n,x,y=0,z=0)=>{const q=J[n].rotation;q.x+=(x-q.x)*k;q.y+=(y-q.y)*k;q.z+=(z-q.z)*k};let py=23;
-    if(mode==='run'){
-      const kL=Math.max(0,-a),kR=Math.max(0,a);
-      set('torso',-.34,a*.2,tilt*.5+c*.025);set('head',.2,-a*.1,-tilt*.25);
-      set('thL',.2+a*1.02,0,.05);set('shL',-.3-kL*1.75);set('thR',.2-a*1.02,0,-.05);set('shR',-.3-kR*1.75);
-      set('uaL',-a*1.05,0,-.16);set('faL',1.5+Math.max(0,a)*.42);set('uaR',a*1.05,0,.16);set('faR',1.5+Math.max(0,-a)*.42);
-      {const q=n=>J[n].rotation.x,reach=(h,s)=>11*Math.cos(q(h))+11*Math.cos(q(h)+q(s));py=Math.max(reach('thL','shL'),reach('thR','shR'))+.8+Math.abs(c)*1.3}
-    }else if(mode==='air'){
-      py=25;set('torso',-.14,0,tilt*.5);set('head',.04);set('thL',1.2);set('shL',-1.5);set('thR',-.32);set('shR',-.95);
-      set('uaL',.85,0,-.62);set('faL',.8);set('uaR',-.65,0,.62);set('faR',1.15);
-    }else if(mode==='fly'){
-      py=25;set('torso',-.72,0,tilt*.6);set('head',.5);set('thL',-.22+a*.1);set('shL',-.34);set('thR',-.22-a*.1);set('shR',-.34);set('uaL',.22,0,-.9);set('faL',.3);set('uaR',.22,0,.9);set('faR',.3);
-    }else{
-      py=11;set('torso',.92,0,tilt*.3);set('head',-.62);set('thL',1.36);set('shL',-.16);set('thR',.42);set('shR',-1.72);
-      set('uaL',-.6,0,-.4);set('faL',.3);set('uaR',-.6,0,.4);set('faR',.3);
-    }
-    r.pelvis.position.y+=(py-r.pelvis.position.y)*k;r.pelvis.rotation.y=-a*(mode==='run'?.14:0);
-  }
   function init(){
     const T3=THREE,renderer=new T3.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(1);renderer.domElement.className='run-gl';$r('#s-run').insertBefore(renderer.domElement,$r('#s-run').firstChild);
     const scene=new T3.Scene();scene.background=new T3.Color('#8fd0f2');scene.fog=new T3.Fog('#8fd0f2',260,1050);
@@ -1666,7 +1688,7 @@ const Run=(()=>{
   const show=(id)=>['menu','hud','over'].forEach(k=>$r('#r-'+k).hidden=k!==id);
   function reset(){
     X.world.clear();segs=[];objs=[];dist=0;coins=0;lane=1;px=0;py=0;vy=0;slide=0;stumble=0;inv=0;slow=1;mag=0;roller=0;shield=0;danger=0;nextSeg=0;floorY=0;bonus=0;mult=0;spring=0;gap=0;curSp=132;jumpQ=0;lastPx=0;rocket=0;T=0;for(let k=-3;k<NSEG;k++)buildSeg(k);nextSeg=NSEG;
-    const pk=JSON.stringify(s);if(X.pk!==pk){dropRig(X.pr);X.pr=makeRig(s);addRocket(X.pr);X.pk=pk}if(!X.ar)X.ar=makeRig(rosterLook(acaI()));
+    const pk=JSON.stringify(s);if(X.pk!==pk){dropRig(X.pr);X.pr=makeRig(s,X.scene);addRocket(X.pr);X.pk=pk}if(!X.ar)X.ar=makeRig(rosterLook(acaI()),X.scene);
   }
   function play(){reset();state='intro';timer=1.9;show('hud');$r('#r-bub').hidden=false;$r('#r-bub').textContent=acaName()+': WOI, TUNGGUIN!';$r('#r-danger').style.width='100%';cancelAnimationFrame(raf);last=0;raf=requestAnimationFrame(loop)}
   function move(d){if(state!=='run')return;const n=Math.max(0,Math.min(2,lane+d));if(n===lane)return;if(heightAt(n,true)>py+8){hit();return}lane=n;beep([70],.03)}
@@ -1731,11 +1753,8 @@ const Run=(()=>{
     $r('#r-img').src=cv.toDataURL('image/png');$r('#r-res').textContent=(isBest?'REKOR BARU · ':'')+'SKOR '+sc.toLocaleString('id-ID')+' · TERBAIK '+best.toLocaleString('id-ID');$r('#r-bub').hidden=true;$r('#r-toast').hidden=true;show('over');lastRun=[meters(),coins];saveScore();
   }
   let lastRun=[0,0];
-  async function saveScore(){const e=$r('#r-save'),pk=$r('#r-pick');e.classList.remove('retry');
-    if(rosterSelf()<0){e.textContent='NAMA BELUM COCOK. PILIH NAMAMU:';pk.replaceChildren(new Option('Pilih nama…',''),...ROSTER.map(r=>new Option(r.n,r.n)));pk.hidden=false;return}
-    pk.hidden=true;e.textContent='MENYIMPAN SKOR…';const m=await Hall.submit(lastRun[0],lastRun[1]);if(m.startsWith('SKOR BELUM')){e.textContent=m+' · TAP ULANG';e.classList.add('retry')}else e.textContent=m}
+  async function saveScore(){const e=$r('#r-save');e.classList.remove('retry');e.textContent='MENYIMPAN SKOR…';const m=await Hall.submit(lastRun[0],lastRun[1]);if(m.startsWith('SKOR BELUM')){e.textContent=m+' · TAP ULANG';e.classList.add('retry')}else e.textContent=m}
   $r('#r-save').onclick=()=>{if($r('#r-save').classList.contains('retry'))saveScore()};
-  $r('#r-pick').onchange=e=>{if(e.target.value){name=e.target.value;saveScore()}};
   function size(){const a=$r('#s-run');if(!X||!a.clientWidth)return;X.renderer.setSize(a.clientWidth,a.clientHeight,false);X.camera.aspect=a.clientWidth/a.clientHeight;X.camera.updateProjectionMatrix()}
   const s0=$r('#s-run');
   s0.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY,done:false}});
@@ -1763,8 +1782,8 @@ const Hall=(()=>{
   const publicUrl=p=>SB_URL+'/storage/v1/object/public/booth/'+p.split('/').map(encodeURIComponent).join('/');
   const loadScores=async()=>{scores=await api('/rest/v1/scores?select=name,score,meters,coins&score=gt.0&order=score.desc,updated_at.asc&limit=31')||[];return scores};
   const loadPhotos=async()=>{photos=await api('/rest/v1/photos?select=id,names,path,created_at&order=created_at.desc&limit=60')||[];return photos};
-  const myName=()=>{const i=rosterSelf();return i>=0?ROSTER[i].n:null};
-  const lookOf=n=>{if(n===myName())return s;const i=ROSTER.findIndex(r=>r.n===n);return i>=0?rosterLook(i):null};
+  const myName=()=>(name||'').replace(/[^\p{L}\p{N} ._'-]/gu,'').replace(/\s+/g,' ').trim().slice(0,16),same=(a,b)=>!!a&&!!b&&a.toLowerCase()===b.toLowerCase();
+  const lookOf=n=>{if(same(n,myName()))return s;const i=ROSTER.findIndex(r=>same(r.n,n));return i>=0?rosterLook(i):null};
   function paintWalls(){const W_=World.hallTex&&World.hallTex();if(!W_)return;
     {const c=W_.scoreC,x=c.getContext('2d');x.fillStyle='#17131b';x.fillRect(0,0,c.width,c.height);x.fillStyle='#e0312f';x.fillRect(0,0,c.width,54);x.fillStyle='#fff';x.font='700 25px Silkscreen, monospace';x.textAlign='center';x.textBaseline='middle';x.fillText('PAPAN SKOR',c.width/2,28,236);
       x.font='700 18px Silkscreen, monospace';if(!scores.length){x.fillStyle='#d8d2dc';x.fillText('BELUM ADA',c.width/2,170)}
@@ -1776,21 +1795,25 @@ const Hall=(()=>{
   async function refresh(){const a=await Promise.allSettled([loadScores(),loadPhotos()]);paintWalls();return a}
   const body=()=>$h('#hall-body'),note=t=>{const d=document.createElement('div');d.className='hall-note';d.textContent=t;body().replaceChildren(d)};
   function renderScore(){if(!scores.length)return note('Belum ada skor. Jadi yang pertama di Dikejar Kejar Aca!');const me=myName(),l=document.createElement('div');l.className='hall-list';
-    scores.forEach((r,i)=>{const row=document.createElement('div');row.className='hall-row'+(r.name===me?' me':'')+(i<3?' top':'');const rk=document.createElement('b');rk.textContent=i+1;const av=document.createElement('canvas'),lk=lookOf(r.name);if(lk)drawTo(av,lk,2,{crop:CROP.head,shadow:false});
+    scores.forEach((r,i)=>{const row=document.createElement('div');row.className='hall-row'+(same(r.name,me)?' me':'')+(i<3?' top':'');const rk=document.createElement('b');rk.textContent=i+1;const av=document.createElement('canvas'),lk=lookOf(r.name);if(lk)drawTo(av,lk,2,{crop:CROP.head,shadow:false});else{av.width=av.height=44;const q=av.getContext('2d');q.fillStyle='#e0312f';q.fillRect(0,0,44,44);q.fillStyle='#fff';q.font='700 24px Silkscreen, monospace';q.textAlign='center';q.textBaseline='middle';q.fillText([...r.name][0].toUpperCase(),22,23)}
       const n=document.createElement('span');n.textContent=r.name;const m=document.createElement('small');m.textContent=r.meters.toLocaleString('id-ID')+' M · '+r.coins+' KASET';const w=document.createElement('div');w.append(n,m);const sc=document.createElement('strong');sc.textContent=r.score.toLocaleString('id-ID');row.append(rk,av,w,sc);l.append(row)});body().replaceChildren(l)}
   function renderGallery(){if(!photos.length)return note('Belum ada foto. Bikin di photobooth lalu tekan PAJANG DI GALERI.');const g=document.createElement('div');g.className='hall-grid';
     photos.forEach(p=>{const b=document.createElement('button'),im=document.createElement('img'),c=document.createElement('span');im.loading='lazy';im.alt='Foto '+p.names.join(', ');im.src=publicUrl(p.path);c.textContent=p.names.join(' · ');b.append(im,c);b.onclick=()=>view(p);g.append(b)});body().replaceChildren(g)}
   function view(p){viewing=p;$h('#hall-img').src=publicUrl(p.path);$h('#hall-cap').textContent=p.names.join(' · ');$h('#hall-view').hidden=false}
   async function show(m){mode=m;$h('#hall-t').textContent=m==='score'?'PAPAN SKOR':'GALERI PHOTOBOOTH';$h('#hall-view').hidden=true;note('Memuat…');
     try{if(m==='score'){await loadScores();if(mode==='score')renderScore()}else{await loadPhotos();if(mode==='gallery')renderGallery()}paintWalls()}catch(e){note('Belum bisa memuat. Cek internet lalu coba lagi.')}}
+  // Keep the board live: other players' results appear without reloading.
+  let sig='';
+  async function tick(){if(document.hidden||!(isOpen||cur==='s-world'))return;try{await Promise.all([loadScores(),loadPhotos()]);const n=JSON.stringify([scores,photos.map(p=>p.id)]);if(n===sig)return;sig=n;paintWalls();if(isOpen&&$h('#hall-view').hidden){if(mode==='score')renderScore();else renderGallery()}}catch(e){}}
+  setInterval(tick,5000);document.addEventListener('visibilitychange',tick);
   $h('#hall-x').onclick=()=>{isOpen=false;$h('#hall').hidden=true};
   $h('#hall-vx').onclick=()=>{$h('#hall-view').hidden=true;viewing=null};
   $h('#hall-dl').onclick=async()=>{if(!viewing)return;const b=$h('#hall-dl');try{const blob=await(await fetch(publicUrl(viewing.path))).blob(),a=document.createElement('a');a.download='photobooth-gathering.jpg';a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}catch(e){b.textContent='GAGAL, COBA LAGI';setTimeout(()=>b.textContent='UNDUH',1800)}};
   return {
     isOpen:()=>isOpen,refresh,
     open(m){isOpen=true;$h('#hall').hidden=false;show(m)},
-    async submit(meters,coins){const n=myName();if(!n)return 'NAMA TIDAK ADA DI DAFTAR, SKOR TIDAK MASUK PAPAN';if(meters<=0)return '';
-      try{await api('/rest/v1/rpc/submit_score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_name:n,p_meters:meters,p_coins:coins})});await loadScores();paintWalls();const rk=scores.findIndex(r=>r.name===n);return rk>=0?'PAPAN SKOR: PERINGKAT #'+(rk+1):'SKOR TERSIMPAN'}catch(e){return 'SKOR BELUM TERSIMPAN, CEK INTERNET'}},
+    async submit(meters,coins){const n=myName();if(!n)return 'NAMA INI TIDAK BISA DIPAKAI DI PAPAN SKOR';if(meters<=0)return '';
+      try{await api('/rest/v1/rpc/submit_score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_name:n,p_meters:meters,p_coins:coins})});await loadScores();paintWalls();const rk=scores.findIndex(r=>same(r.name,n));return rk>=0?'PAPAN SKOR: PERINGKAT #'+(rk+1):'SKOR TERSIMPAN'}catch(e){return 'SKOR BELUM TERSIMPAN, CEK INTERNET'}},
     async publish(cv,names){const c=document.createElement('canvas');c.width=720;c.height=1280;c.getContext('2d').drawImage(cv,0,0,720,1280);const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));if(!blob)throw new Error('encode');
       const id=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12)).toLowerCase(),path='strips/'+id+'.jpg';
       await api('/storage/v1/object/booth/'+path,{method:'POST',headers:{'Content-Type':'image/jpeg','x-upsert':'false'},body:blob});
