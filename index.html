@@ -177,7 +177,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 .bb-cd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 92px Archivo,sans-serif;color:#fff;text-shadow:0 5px 0 #8f1715,0 0 18px rgba(0,0,0,.45)}
 .bb-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}.bb-flash.go{animation:bbf .5s ease-out}
 @keyframes bbf{0%{opacity:1}100%{opacity:0}}
-#bb-img{height:min(62vh,560px);width:auto;max-width:100%;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+#bb-img{height:min(48vh,450px);width:auto;max-width:100%;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
 
 /* dikejar aca */
 #s-run{display:block;padding:0;background:#17131b;z-index:5;touch-action:none;user-select:none}
@@ -194,7 +194,20 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 #r-face{width:112px;height:auto;background:var(--cream);box-shadow:0 5px 0 #a8977a}
 .r-title{font:900 43px/1 Archivo,sans-serif;text-align:center;color:#fff;text-shadow:0 4px 0 var(--red-d)}.r-title em{font-style:normal;color:#ff4a47}
 .r-how{display:grid;gap:4px;text-align:center;font:400 11px Silkscreen,monospace;color:#fff}
-#r-img{height:min(58vh,520px);width:auto;max-width:100%;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+#r-img{height:min(46vh,430px);width:auto;max-width:100%;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+
+/* shared walls */
+.r-lbb,.bb-pub{width:100%;max-width:340px}.bb-pub:disabled{opacity:.7}.r-save{color:#f2c94c}
+.hall{position:absolute;inset:0;z-index:20;background:#120c18;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));gap:12px}
+.hall-head{display:flex;align-items:center;justify-content:space-between;flex:none}
+.hall-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.hall-note{padding:48px 18px;text-align:center;color:#ece6f0;line-height:1.5}
+.hall-list{display:flex;flex-direction:column;gap:6px}
+.hall-row{display:grid;grid-template-columns:28px 46px minmax(0,1fr) auto;gap:8px;align-items:center;background:#1c1722;border:2px solid var(--line);padding:5px 9px}
+.hall-row>b{font:700 15px Silkscreen,monospace;text-align:center;color:#d8d2dc}.hall-row.top>b{color:#f2c94c}.hall-row.me{border-color:var(--red)}
+.hall-row canvas{width:44px;height:auto;background:var(--cream)}.hall-row span{display:block;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hall-row small{display:block;color:var(--mute);font-size:11px}.hall-row strong{font:700 15px Silkscreen,monospace;color:#f2c94c}
+.hall-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hall-grid button{background:#1c1722;border:2px solid var(--line);padding:5px;display:flex;flex-direction:column;gap:5px;min-width:0}.hall-grid img{width:100%;aspect-ratio:9/16;object-fit:cover;background:#2a2430}.hall-grid span{font-size:11px;color:#ece6f0;line-height:1.25}
+.hall-view{position:absolute;inset:0;background:#120c18;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:calc(14px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom))}#hall-img{height:min(74vh,690px);width:auto;max-width:100%}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important}}
 </style>
@@ -308,7 +321,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
     <canvas id="bb-final" hidden></canvas><img id="bb-img" alt="Hasil photobooth">
     <div class="hint">TEKAN LAMA GAMBAR UNTUK SIMPAN</div>
     <div class="row"><button class="ghost" id="bb-again">FOTO LAGI</button><button class="btn" id="bb-dl">UNDUH</button></div>
-    <button class="btn wide" id="bb-camp">KEMBALI KE VILLA</button>
+    <button class="ghost bb-pub" id="bb-pub">PAJANG DI GALERI</button><button class="btn wide" id="bb-camp">KEMBALI KE VILLA</button>
   </div>
 </section>
 
@@ -320,9 +333,16 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
   </div>
   <div class="r-bub" id="r-bub" hidden></div><div class="r-toast" id="r-toast" hidden></div>
   <div class="r-panel" id="r-menu"><button class="ghost sm r-back" id="r-back">← VILLA</button><canvas id="r-face"></canvas><div class="r-title">DIKEJAR KEJAR<br><em id="r-who">ACA</em></div>
-    <p class="sub">Kamu telat ke gathering dan Aca udah ngejar. Kabur lewat atap angkot!</p><div class="r-how"><span>← → PINDAH JALUR</span><span>↑ LOMPAT</span><span>↓ ROLL · NAIK RAMP KE ATAP ANGKOT</span></div><div class="hint" id="r-best"></div><button class="btn" id="r-start">MULAI LARI</button></div>
-  <div class="r-panel" id="r-over" hidden><canvas id="r-final" hidden></canvas><img id="r-img" alt="Hasil Dikejar Kejar Aca"><div class="hint" id="r-res"></div><div class="row"><button class="ghost" id="r-again">LARI LAGI</button><button class="btn" id="r-dl">UNDUH</button></div><button class="btn wide" id="r-camp">KEMBALI KE VILLA</button></div>
+    <p class="sub">Kamu telat ke gathering dan Aca udah ngejar. Kabur lewat atap angkot!</p><div class="r-how"><span>← → PINDAH JALUR</span><span>↑ LOMPAT</span><span>↓ ROLL · NAIK RAMP KE ATAP ANGKOT</span></div><div class="hint" id="r-best"></div><button class="btn" id="r-start">MULAI LARI</button><button class="ghost" id="r-lb">PAPAN SKOR</button></div>
+  <div class="r-panel" id="r-over" hidden><canvas id="r-final" hidden></canvas><img id="r-img" alt="Hasil Dikejar Kejar Aca"><div class="hint" id="r-res"></div><div class="hint r-save" id="r-save"></div><div class="row"><button class="ghost" id="r-again">LARI LAGI</button><button class="btn" id="r-dl">UNDUH</button></div><button class="ghost r-lbb" id="r-lb2">PAPAN SKOR</button><button class="btn wide" id="r-camp">KEMBALI KE VILLA</button></div>
 </section>
+
+<!-- 9. SHARED WALLS -->
+<div class="hall" id="hall" hidden>
+  <header class="hall-head"><div class="step" id="hall-t"></div><button class="ghost sm" id="hall-x">TUTUP</button></header>
+  <div class="hall-body" id="hall-body"></div>
+  <div class="hall-view" id="hall-view" hidden><img id="hall-img" alt="Foto photobooth"><div class="hint" id="hall-cap"></div><div class="row"><button class="ghost" id="hall-vx">KEMBALI</button><button class="btn" id="hall-dl">UNDUH</button></div></div>
+</div>
 </div>
 
 <script>
@@ -1122,6 +1142,10 @@ const World=(()=>{
     box(24,62,30,'#1c1212',564,31,345);box(26,9,32,'#e0312f',564,58,345);box(10,3,20,'#3a3a40',549,29,345);box(1.5,2,1.5,'#e0312f',547,32,339);box(1.5,2,1.5,'#f2c94c',547,32,351);
     add(new T3.PlaneGeometry(24,20),new T3.MeshBasicMaterial({color:'#2f8f62'}),551.8,44,345,{cast:false,ry:-Math.PI/2});
     add(new T3.PlaneGeometry(28,8),new T3.MeshBasicMaterial({map:tex(textCanvas(280,80,'#e0312f','#ffffff','DIKEJAR KEJAR ACA',24),false)}),550.8,58,345,{cast:false,ry:-Math.PI/2});
+    // shared walls: leaderboard and gallery
+    const hallC=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c},scoreC=hallC(256,320),galC=hallC(384,256),scoreTex=new T3.CanvasTexture(scoreC),galTex=new T3.CanvasTexture(galC);
+    box(42,54,1.4,'#5e3d26',532,50,415.3,{cast:false});add(new T3.PlaneGeometry(38,50),new T3.MeshBasicMaterial({map:scoreTex}),532,50,414.4,{cast:false,ry:Math.PI});
+    box(58,42,1.4,'#5e3d26',421,50,415.3,{cast:false});add(new T3.PlaneGeometry(54,38),new T3.MeshBasicMaterial({map:galTex}),421,50,414.4,{cast:false,ry:Math.PI});
     // photobooth (red curtain, faces the living room)
     box(40,62,50,'#e0312f',406,31,365);box(.8,48,38,'#2a1d1a',426.6,26,365,{cast:false});
     for(let i=0;i<6;i++)box(.8,48,6,i%2?'#a81f2a':'#d7263d',427.2,26,349+i*6.4,{cast:false});
@@ -1189,7 +1213,7 @@ const World=(()=>{
       c.blob=new T3.Mesh(BLOB,BLOBM);c.blob.position.y=.4;scene.add(c.mesh,c.blob)}
     function dropChar(c){if(!c||!c.mesh)return;scene.remove(c.mesh,c.blob);c.mesh.material.dispose();new Set([...c.tx.f,...c.tx.b,c.tx.t].filter(Boolean)).forEach(t=>t.dispose())}
 
-    G={pixTex:tex,renderer,scene,camera,fog,hemi,sun,SUNDIR,fireL,lantL,sky,skyGeo,sunS,moonS,stars,clouds,outerMat,mtMat,hillMat,flames,sparks,notes,itemSprites,ff,ffSeed,lamp,duck,roomL,winMat,water,charMesh,dropChar,bulbM,th:null,
+    G={hall:{scoreC,scoreTex,galC,galTex},pixTex:tex,renderer,scene,camera,fog,hemi,sun,SUNDIR,fireL,lantL,sky,skyGeo,sunS,moonS,stars,clouds,outerMat,mtMat,hillMat,flames,sparks,notes,itemSprites,ff,ffSeed,lamp,duck,roomL,winMat,water,charMesh,dropChar,bulbM,th:null,
       camPos:new T3.Vector3(),camLook:new T3.Vector3(),snap:true};
   }
 
@@ -1227,6 +1251,8 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
     {x:560,y:184,r:28,h:40,label:()=>Music.on?'MATIKAN':'PUTAR',act:()=>{$('#b-music').click();toast(Music.on?'♪ BOOMBOX NYALA':'BOOMBOX DIMATIKAN')}},
     {x:446,y:365,r:28,h:70,label:()=>'PHOTOBOOTH',act:()=>Booth.open()},
     {x:532,y:345,r:26,h:66,label:()=>'MAIN GAME',act:()=>go('s-run')},
+    {x:532,y:394,r:22,h:72,label:()=>'PAPAN SKOR',act:()=>Hall.open('score')},
+    {x:421,y:398,r:20,h:72,label:()=>'GALERI',act:()=>Hall.open('gallery')},
     {x:SIGN.x,y:SIGN.y+12,r:24,h:46,label:()=>'BACA',act:()=>say('Papan Info',['GATHERING MEMORIES · The Scarlett House','28–29 November 2026 · Bandung','Misi: kumpulkan '+ITEMS.length+' memories di sekitar villa. Sudah dapat '+got.size+'.'])},
     {x:BF.x,y:BF.y+24,r:30,h:36,label:()=>'LIHAT',act:()=>say('Api Unggun',['Kayu berderak, hangatnya pas.','Di sinilah nanti semua cerita dan kenangan dikumpulkan.'])},
   ];
@@ -1236,7 +1262,7 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
   function update(dt){
     T+=dt;
     let turn=0,fwd=0;
-    if(!dlg&&introT<=0){
+    if(!dlg&&introT<=0&&!Hall.isOpen()){
       if(keys.ArrowLeft||keys.a)turn--;if(keys.ArrowRight||keys.d)turn++;if(keys.ArrowUp||keys.w)fwd++;if(keys.ArrowDown||keys.s)fwd--;
       if(joy){const dx=joy.x-joy.ox,dy=joy.y-joy.oy;if(Math.abs(dx)>8)turn=Math.max(-1,Math.min(1,dx/40));if(Math.abs(dy)>8)fwd=Math.max(-1,Math.min(1,-dy/40))}
     }
@@ -1402,7 +1428,7 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
     $('#w-help').textContent=touch?'GESER ATAS/BAWAH = MAJU · KIRI/KANAN = BELOK':'↑↓ MAJU/MUNDUR · ←→ BELOK · SPASI AKSI · V KAMERA';
     $('#w-help').style.opacity=1;helpT=0;if(G)G.snap=m==='tpp'}
   document.querySelectorAll('#w-cam button').forEach(b=>b.onclick=()=>setCam(b.dataset.cam));
-  window.addEventListener('keydown',e=>{if(cur!=='s-world')return;const k=e.key.length===1?e.key.toLowerCase():e.key;
+  window.addEventListener('keydown',e=>{if(cur!=='s-world'||Hall.isOpen())return;const k=e.key.length===1?e.key.toLowerCase():e.key;
     if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','a','s','d','w'].includes(k)){keys[k]=true;e.preventDefault()}
     if(k==='v')setCam(cam==='tpp'?'fpp':'tpp');
     if(k===' '||k==='Enter'||k==='e'){e.preventDefault();if(dlg)advance();else if(target)target.act()}});
@@ -1423,10 +1449,10 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
       player={look:JSON.parse(key),set:sprites(s),x:keep?keep.x:480,y:keep?keep.y:604,ang:keep?keep.ang:-Math.PI/2,walk:0,moving:false};G.charMesh(player);handLook()}
     const self=rosterSelf();if(npcSkip!==self){npcs.forEach(G.dropChar);npcSkip=self;npcs=[];ROSTER.forEach((r,i)=>{if(i===self)return;const[x0,y0,z]=SPOTS[i];let x=x0,y=y0;for(let q=4;blocked(x,y)&&q<60;q+=4){x=x0+Math.cos(q)*q;y=y0+Math.sin(q)*q}
       const n={look:rosterLook(i),x,y,hx:x,hy:y,ang:Math.PI/2,walk:0,moving:false,name:r.n,tm:Math.random()*2,dx:0,dy:0,lines:[HELLO[i%HELLO.length],HINTS[z]]};n.set=sprites(n.look);G.charMesh(n);npcs.push(n)})}
-    resize();memText();G.snap=true;run=true;last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);setCam(cam);
+    resize();memText();Hall.refresh();G.snap=true;run=true;last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);setCam(cam);
     if(first){first=false;introT=3.4;setTimeout(()=>cur==='s-world'&&say('Villa Gathering',['Selamat datang di villa, {n}!','Masuk lewat pintu depan, ngobrol sama anak-anak, dan kumpulkan '+ITEMS.length+' memories 90-an di dalam dan sekitar villa.','Tekan TPP / FPP di kiri atas untuk ganti kamera.']),3700)}
   }
-  return {start,stop(){run=false;cancelAnimationFrame(raf);joy=null;for(const k in keys)keys[k]=false}};
+  return {hallTex:()=>G&&G.hall,start,stop(){run=false;cancelAnimationFrame(raf);joy=null;for(const k in keys)keys[k]=false}};
 })();
 $('#b-world').onclick=()=>go('s-world');
 
@@ -1505,8 +1531,9 @@ const Booth=(()=>{
       for(const n of [3,2,1]){if(my!==run)return;$b('#bb-cd').textContent=n;beep(72);await wait(480)}
       if(my!==run)return;$b('#bb-cd').textContent='';beep(88,.16);const f=$b('#bb-flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');await wait(480);
     }
-    if(my!==run)return;await finalCard();show('done');
+    if(my!==run)return;await finalCard();{const b=$b('#bb-pub');b.disabled=false;b.textContent='PAJANG DI GALERI'}show('done');
   }
+  $b('#bb-pub').onclick=async()=>{const b=$b('#bb-pub');b.disabled=true;b.textContent='MENGIRIM…';try{await Hall.publish($b('#bb-final'),crew().map(p=>p.name));b.textContent='SUDAH DIPAJANG ✓'}catch(e){b.disabled=false;b.textContent='GAGAL, COBA LAGI'}};
   $b('#bb-search').oninput=renderPick;
   $b('#bb-next').onclick=()=>{show('style');renderStyle()};
   $b('#bb-go').onclick=shoot;
@@ -1529,7 +1556,7 @@ const Run=(()=>{
   ];
   const biomeAt=m=>BIOMES[Math.floor(Math.max(0,m)/400)%BIOMES.length];
   let X=null,state='menu',raf=0,last=0,T=0,dist=0,coins=0,lane=1,px=0,py=0,vy=0,slide=0,stumble=0,inv=0,slow=1,mag=0,roller=0,shield=0,timer=0,danger=0,nextSeg=0,floorY=0,bonus=0,mult=0,spring=0,gap=0,curSp=0,jumpQ=0,lastPx=0,rocket=0,segs=[],objs=[],best=+pref.get('tsh-run-best','0')||0,drag=null;
-  const meters=()=>Math.floor(dist/M2U),score=()=>meters()+bonus;
+  const meters=()=>Math.floor(dist/M2U),score=()=>meters()+coins*10;
   const acaI=()=>ROSTER.findIndex(r=>r.n==='Aca'),isAca=()=>rosterSelf()===acaI(),acaName=()=>isAca()?'ACA KW':'ACA';
   /* Cut-out rig: the player's own pixel sprite, sliced into jointed limbs for a fluid anime run. */
   function makeRig(look){
@@ -1661,7 +1688,7 @@ const Run=(()=>{
         if(o.kind==='ob'){if(o.hit||wz<-7||wz>7+step)return;if(o.lane!=='all'&&Math.abs(o.x-px)>15)return;
           if((o.type==='low'&&py>13)||(o.type==='high'&&slide>0))return;o.hit=true;hit()}
         else if(!o.got){if(o.kind==='coin'&&mag>0&&Math.abs(wz)<75&&wz<20){o.m.position.x+=(px-o.m.position.x)*Math.min(1,dt*9);o.x=o.m.position.x}
-          if(wz>-9&&wz<9+step&&Math.abs(o.x-px)<16&&Math.abs(o.y-(py+14))<27){o.got=true;o.m.visible=false;if(o.kind==='coin'){coins++;bonus+=mult>0?20:10;beep([84],.03)}else{if(o.kind==='mag'){mag=8;toast('WALKMAN: KASET KETARIK!')}if(o.kind==='roller'){roller=5;toast('SEPATU RODA: NGEBUT!')}if(o.kind==='shield'){shield=15;toast('JAKET FLANEL: TAHAN 1 TABRAKAN')}if(o.kind==='x2'){mult=12;toast('SKOR KASET x2!')}if(o.kind==='spring'){spring=10;toast('SEPATU PER: LOMPAT TINGGI!')}if(o.kind==='rocket')startRocket();beep([72,79,84])}}}
+          if(wz>-9&&wz<9+step&&Math.abs(o.x-px)<16&&Math.abs(o.y-(py+14))<27){o.got=true;o.m.visible=false;if(o.kind==='coin'){coins+=mult>0?2:1;beep([84],.03)}else{if(o.kind==='mag'){mag=8;toast('WALKMAN: KASET KETARIK!')}if(o.kind==='roller'){roller=5;toast('SEPATU RODA: NGEBUT!')}if(o.kind==='shield'){shield=15;toast('JAKET FLANEL: TAHAN 1 TABRAKAN')}if(o.kind==='x2'){mult=12;toast('SKOR KASET x2!')}if(o.kind==='spring'){spring=10;toast('SEPATU PER: LOMPAT TINGGI!')}if(o.kind==='rocket')startRocket();beep([72,79,84])}}}
       });
       while(segs.length&&-segs[0].k*SEG-SEG+dist>430){const old=segs.shift();X.world.remove(old.g);objs=objs.filter(o=>o.seg!==old.k);buildSeg(nextSeg++)}
     }
@@ -1701,7 +1728,7 @@ const Run=(()=>{
     x.fillStyle='rgba(12,8,20,.86)';x.fillRect(90,1490,900,270);x.fillStyle='#fff';x.font='700 34px Silkscreen, monospace';x.fillText((name||'KAMU').toUpperCase()+' KETANGKEP!',540,1548,840);
     x.font='900 110px Archivo, sans-serif';x.fillStyle='#f2c94c';x.fillText(meters().toLocaleString('id-ID')+' M',540,1668,820);x.fillStyle='#d8d2dc';x.font='700 26px Silkscreen, monospace';x.fillText(coins+' KASET · SKOR '+sc.toLocaleString('id-ID'),540,1728,820);
     x.fillStyle='#f5f2ec';x.font='800 40px Archivo, sans-serif';x.fillText('Gathering Memories',540,1832,900);x.font='700 22px Silkscreen, monospace';x.fillText('THE SCARLETT HOUSE · 28-29 NOV 2026',540,1874,980);
-    $r('#r-img').src=cv.toDataURL('image/png');$r('#r-res').textContent=(isBest?'REKOR BARU · ':'')+'SKOR '+sc.toLocaleString('id-ID')+' · TERBAIK '+best.toLocaleString('id-ID');$r('#r-bub').hidden=true;$r('#r-toast').hidden=true;show('over');
+    $r('#r-img').src=cv.toDataURL('image/png');$r('#r-res').textContent=(isBest?'REKOR BARU · ':'')+'SKOR '+sc.toLocaleString('id-ID')+' · TERBAIK '+best.toLocaleString('id-ID');$r('#r-bub').hidden=true;$r('#r-toast').hidden=true;show('over');$r('#r-save').textContent='MENYIMPAN SKOR…';Hall.submit(meters(),coins).then(m=>$r('#r-save').textContent=m);
   }
   function size(){const a=$r('#s-run');if(!X||!a.clientWidth)return;X.renderer.setSize(a.clientWidth,a.clientHeight,false);X.camera.aspect=a.clientWidth/a.clientHeight;X.camera.updateProjectionMatrix()}
   const s0=$r('#s-run');
@@ -1718,6 +1745,53 @@ const Run=(()=>{
     stop(){if(state!=='menu')state='menu';cancelAnimationFrame(raf);drag=null},
   };
 })();
+
+/* ================= SHARED WALLS: leaderboard + photobooth gallery (Supabase) ================= */
+const Hall=(()=>{
+  // The publishable key is meant for browsers; database rules decide what it can do.
+  const SB_URL='https://prbbkzkjqkgcvibaskdn.supabase.co',SB_KEY='sb_publishable_POpab19bHYB_alhD_dKCsQ_SuYtkCrl';
+  const $h=q=>document.querySelector(q);
+  let isOpen=false,mode='score',scores=[],photos=[],viewing=null;
+  async function api(path,opt={}){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);
+    try{const r=await fetch(SB_URL+path,{...opt,signal:c.signal,headers:{apikey:SB_KEY,...(opt.headers||{})}});if(!r.ok)throw new Error('HTTP '+r.status);const x=await r.text();return x?JSON.parse(x):null}finally{clearTimeout(t)}}
+  const publicUrl=p=>SB_URL+'/storage/v1/object/public/booth/'+p.split('/').map(encodeURIComponent).join('/');
+  const loadScores=async()=>{scores=await api('/rest/v1/scores?select=name,score,meters,coins&score=gt.0&order=score.desc,updated_at.asc&limit=31')||[];return scores};
+  const loadPhotos=async()=>{photos=await api('/rest/v1/photos?select=id,names,path,created_at&order=created_at.desc&limit=60')||[];return photos};
+  const myName=()=>{const i=rosterSelf();return i>=0?ROSTER[i].n:null};
+  const lookOf=n=>{if(n===myName())return s;const i=ROSTER.findIndex(r=>r.n===n);return i>=0?rosterLook(i):null};
+  function paintWalls(){const W_=World.hallTex&&World.hallTex();if(!W_)return;
+    {const c=W_.scoreC,x=c.getContext('2d');x.fillStyle='#17131b';x.fillRect(0,0,c.width,c.height);x.fillStyle='#e0312f';x.fillRect(0,0,c.width,54);x.fillStyle='#fff';x.font='700 25px Silkscreen, monospace';x.textAlign='center';x.textBaseline='middle';x.fillText('PAPAN SKOR',c.width/2,28,236);
+      x.font='700 18px Silkscreen, monospace';if(!scores.length){x.fillStyle='#d8d2dc';x.fillText('BELUM ADA',c.width/2,170)}
+      scores.slice(0,6).forEach((r,i)=>{const y=86+i*40;x.textAlign='left';x.fillStyle=i===0?'#f2c94c':'#fff';x.fillText((i+1)+' '+r.name.toUpperCase().slice(0,10),12,y,158);x.textAlign='right';x.fillText(String(r.score),c.width-10,y,76)});W_.scoreTex.needsUpdate=true}
+    {const c=W_.galC,x=c.getContext('2d');x.fillStyle='#efe4d0';x.fillRect(0,0,c.width,c.height);x.fillStyle='#e0312f';x.fillRect(0,0,c.width,42);x.fillStyle='#fff';x.font='700 22px Silkscreen, monospace';x.textAlign='center';x.textBaseline='middle';x.fillText('GALERI PHOTOBOOTH',c.width/2,22,360);W_.galTex.needsUpdate=true;
+      if(!photos.length){x.fillStyle='#5e3d26';x.font='700 16px Silkscreen, monospace';x.fillText('BELUM ADA FOTO',c.width/2,150);W_.galTex.needsUpdate=true}
+      photos.slice(0,6).forEach((p,i)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{x.fillStyle='#1c1212';x.fillRect(8+i*62,50,58,198);x.drawImage(im,10+i*62,52,54,194);W_.galTex.needsUpdate=true};im.src=publicUrl(p.path)})}
+  }
+  async function refresh(){const a=await Promise.allSettled([loadScores(),loadPhotos()]);paintWalls();return a}
+  const body=()=>$h('#hall-body'),note=t=>{const d=document.createElement('div');d.className='hall-note';d.textContent=t;body().replaceChildren(d)};
+  function renderScore(){if(!scores.length)return note('Belum ada skor. Jadi yang pertama di Dikejar Kejar Aca!');const me=myName(),l=document.createElement('div');l.className='hall-list';
+    scores.forEach((r,i)=>{const row=document.createElement('div');row.className='hall-row'+(r.name===me?' me':'')+(i<3?' top':'');const rk=document.createElement('b');rk.textContent=i+1;const av=document.createElement('canvas'),lk=lookOf(r.name);if(lk)drawTo(av,lk,2,{crop:CROP.head,shadow:false});
+      const n=document.createElement('span');n.textContent=r.name;const m=document.createElement('small');m.textContent=r.meters.toLocaleString('id-ID')+' M · '+r.coins+' KASET';const w=document.createElement('div');w.append(n,m);const sc=document.createElement('strong');sc.textContent=r.score.toLocaleString('id-ID');row.append(rk,av,w,sc);l.append(row)});body().replaceChildren(l)}
+  function renderGallery(){if(!photos.length)return note('Belum ada foto. Bikin di photobooth lalu tekan PAJANG DI GALERI.');const g=document.createElement('div');g.className='hall-grid';
+    photos.forEach(p=>{const b=document.createElement('button'),im=document.createElement('img'),c=document.createElement('span');im.loading='lazy';im.alt='Foto '+p.names.join(', ');im.src=publicUrl(p.path);c.textContent=p.names.join(' · ');b.append(im,c);b.onclick=()=>view(p);g.append(b)});body().replaceChildren(g)}
+  function view(p){viewing=p;$h('#hall-img').src=publicUrl(p.path);$h('#hall-cap').textContent=p.names.join(' · ');$h('#hall-view').hidden=false}
+  async function show(m){mode=m;$h('#hall-t').textContent=m==='score'?'PAPAN SKOR':'GALERI PHOTOBOOTH';$h('#hall-view').hidden=true;note('Memuat…');
+    try{if(m==='score'){await loadScores();if(mode==='score')renderScore()}else{await loadPhotos();if(mode==='gallery')renderGallery()}paintWalls()}catch(e){note('Belum bisa memuat. Cek internet lalu coba lagi.')}}
+  $h('#hall-x').onclick=()=>{isOpen=false;$h('#hall').hidden=true};
+  $h('#hall-vx').onclick=()=>{$h('#hall-view').hidden=true;viewing=null};
+  $h('#hall-dl').onclick=async()=>{if(!viewing)return;const b=$h('#hall-dl');try{const blob=await(await fetch(publicUrl(viewing.path))).blob(),a=document.createElement('a');a.download='photobooth-gathering.jpg';a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}catch(e){b.textContent='GAGAL, COBA LAGI';setTimeout(()=>b.textContent='UNDUH',1800)}};
+  return {
+    isOpen:()=>isOpen,refresh,
+    open(m){isOpen=true;$h('#hall').hidden=false;show(m)},
+    async submit(meters,coins){const n=myName();if(!n)return 'NAMA TIDAK ADA DI DAFTAR, SKOR TIDAK MASUK PAPAN';if(meters<=0)return '';
+      try{await api('/rest/v1/rpc/submit_score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_name:n,p_meters:meters,p_coins:coins})});await loadScores();paintWalls();const rk=scores.findIndex(r=>r.name===n);return rk>=0?'PAPAN SKOR: PERINGKAT #'+(rk+1):'SKOR TERSIMPAN'}catch(e){return 'SKOR BELUM TERSIMPAN, CEK INTERNET'}},
+    async publish(cv,names){const c=document.createElement('canvas');c.width=720;c.height=1280;c.getContext('2d').drawImage(cv,0,0,720,1280);const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));if(!blob)throw new Error('encode');
+      const id=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12)).toLowerCase(),path='strips/'+id+'.jpg';
+      await api('/storage/v1/object/booth/'+path,{method:'POST',headers:{'Content-Type':'image/jpeg','x-upsert':'false'},body:blob});
+      await api('/rest/v1/photos',{method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({names:names.slice(0,5),path})});await loadPhotos();paintWalls()},
+  };
+})();
+$('#r-lb').onclick=()=>Hall.open('score');$('#r-lb2').onclick=()=>Hall.open('score');
 </script>
 </body>
 </html>
