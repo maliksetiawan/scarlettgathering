@@ -153,31 +153,28 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 .w-hands{position:absolute;inset:0;width:100%!important;height:100%!important;pointer-events:none;image-rendering:auto}
 #w-booth{position:absolute;top:calc(58px + env(safe-area-inset-top));left:128px;height:34px;transform:none}
 
-/* photobooth */
+/* photobooth: live camera under the event twibbon */
 #s-booth{display:block;padding:0;background:#120c18;z-index:7}
 #s-booth>*{transform:none}
 .bb-head{position:absolute;z-index:2;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;display:flex;align-items:center;justify-content:space-between}
-.bb-body{position:absolute;inset:0;padding:calc(62px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;min-height:0}
-.bb-body h2{font-size:28px}.bb-body .sub{align-self:center}
-.bb-center{align-items:center;justify-content:center;gap:14px}
-.bb-tools{display:flex;gap:8px;align-items:center}.bb-tools .field{flex:1;min-width:0;padding:9px 12px;font-size:16px;text-align:left}
-.bb-count{font-family:'Silkscreen',monospace;font-size:11px;white-space:nowrap;color:#ffd166}
-.bb-grid{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:max-content;gap:8px;padding:2px}
-.bp{position:relative;background:var(--cream);border:3px solid transparent;padding:6px 3px;display:flex;flex-direction:column;align-items:center;gap:4px}
-.bp canvas{width:58px;height:auto}.bp span{font-size:12px;font-weight:700;color:#2a1d1a;line-height:1.1;text-align:center}
-.bp i{position:absolute;top:3px;right:3px;font:400 9px Silkscreen,monospace;background:#1c1212;color:#fff;padding:1px 3px}
-.bp.on{border-color:var(--red);box-shadow:0 0 0 2px #fff}.bp:disabled{opacity:.38}
-.bb-foot{flex:none}.bb-foot .btn{width:100%}
-#bb-prev{width:100%;max-height:34vh;object-fit:contain;flex:none;image-rendering:auto}
-.bb-scroll{flex:1;min-height:0;overflow-y:auto}
-.bb-bds{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
-.bs{background:#17131b;border:2px solid var(--line);padding:3px 3px 5px;display:flex;flex-direction:column;gap:3px;align-items:center}.bs canvas{width:100%;height:auto;image-rendering:auto}.bs span{font-size:11px;color:var(--mute);line-height:1.1}.bs.on{border-color:var(--red)}.bs.on span{color:#fff}
-.bb-live{position:relative;width:100%;border:10px solid #141216;box-shadow:0 0 0 2px rgba(255,255,255,.2);overflow:hidden}
-#bb-live{width:100%;height:auto;image-rendering:auto}
-.bb-cd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 92px Archivo,sans-serif;color:#fff;text-shadow:0 5px 0 #8f1715,0 0 18px rgba(0,0,0,.45)}
+.bb-body{position:absolute;inset:0;padding:calc(62px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;min-height:0}
+.bb-center{align-items:center;justify-content:center}
+.bb-wrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;container-type:size}
+.bb-stage{position:relative;aspect-ratio:1080/1935;width:min(100%,46vh);width:min(100cqw,calc(100cqh * 1080 / 1935));overflow:hidden;background:#0b0810;border-radius:6px;box-shadow:0 0 0 2px rgba(255,255,255,.14),0 14px 40px rgba(0,0,0,.5)}
+.bb-stage video,.bb-twb{position:absolute;inset:0;width:100%;height:100%}
+.bb-stage video{object-fit:cover}.bb-stage video.mir{transform:scaleX(-1)}
+.bb-twb{pointer-events:none;user-select:none;-webkit-user-select:none}
+.bb-msg{position:absolute;inset:14% 12%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;color:#fff;font:700 15px/1.45 'Space Grotesk',system-ui,sans-serif}
+.bb-msg .btn{min-width:0}
+.bb-cd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 110px Archivo,sans-serif;color:#fff;text-shadow:0 5px 0 #d1477a,0 0 22px rgba(0,0,0,.45);pointer-events:none}
 .bb-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}.bb-flash.go{animation:bbf .5s ease-out}
 @keyframes bbf{0%{opacity:1}100%{opacity:0}}
-#bb-img{height:min(48vh,450px);width:auto;max-width:100%;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+.bb-ctl{flex:none;width:100%;max-width:420px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.bb-ctl .ghost{justify-self:start}.bb-ctl #bb-flip{grid-column:3;justify-self:end}
+.bb-shut{width:76px;height:76px;border-radius:50%;background:#fff;border:6px solid #f28fb4;box-shadow:0 0 0 3px #fff,0 6px 16px rgba(0,0,0,.45);transition:transform .08s}
+.bb-shut:active{transform:scale(.92)}.bb-shut:disabled{opacity:.35}
+#bb-img{flex:0 1 auto;min-height:0;max-height:calc(100% - 190px);width:auto;max-width:100%;border-radius:6px;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+#bb-done .ghost.wide{width:100%;max-width:340px}
 
 /* awass ada achaaa */
 #s-run{display:block;padding:0;background:#17131b;z-index:5;touch-action:none;user-select:none}
@@ -197,7 +194,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 #r-img{height:min(46vh,430px);width:auto;max-width:100%;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
 
 /* shared walls */
-.r-lbb,.bb-pub{width:100%;max-width:340px}.bb-pub:disabled{opacity:.7}.r-save{color:#f2c94c}.r-save.retry{text-decoration:underline;cursor:pointer}
+.r-lbb{width:100%;max-width:340px}.r-save{color:#f2c94c}.r-save.retry{text-decoration:underline;cursor:pointer}
 .hall{position:absolute;inset:0;z-index:20;background:#120c18;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));gap:12px}
 .hall-head{display:flex;align-items:center;justify-content:space-between;flex:none}
 .hall-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -320,32 +317,28 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
   <div class="w-dlg" id="w-dlg" hidden><div class="who" id="w-who"></div><div class="txt" id="w-txt"></div><div class="more">TAP ▾</div></div>
 </section>
 
-<!-- 7. PHOTOBOOTH -->
+<!-- 7. PHOTOBOOTH (camera + twibbon) -->
 <section id="s-booth" class="screen">
-  <header class="bb-head"><button class="ghost sm" id="bb-back">← KEMBALI</button><div class="step" id="bb-num">1 / 3</div></header>
-  <div class="bb-body" id="bb-pick">
-    <h2>Foto sama siapa?</h2>
-    <p class="sub">Pilih sampai 4 orang.</p>
-    <div class="bb-tools"><input id="bb-search" class="field" placeholder="Cari nama" autocomplete="off"><div class="bb-count" id="bb-count"></div></div>
-    <div class="bb-grid" id="bb-grid"></div>
-    <div class="bb-foot"><button class="btn" id="bb-next">LANJUT</button></div>
-  </div>
-  <div class="bb-body" id="bb-style" hidden>
-    <h2>Pilih background</h2>
-    <canvas id="bb-prev"></canvas>
-    <div class="bb-scroll"><div class="plabel">BACKGROUND</div><div class="bb-bds" id="bb-bds"></div><div class="plabel">WARNA FRAME</div><div class="sw" id="bb-frs"></div></div>
-    <div class="bb-foot"><button class="btn" id="bb-go">MULAI FOTO</button></div>
-  </div>
-  <div class="bb-body bb-center" id="bb-shoot" hidden>
-    <div class="step" id="bb-shot">POSE 1 / 6</div>
-    <div class="bb-live"><canvas id="bb-live"></canvas><div class="bb-cd" id="bb-cd"></div><div class="bb-flash" id="bb-flash"></div></div>
-    <p class="sub">Siap-siap, senyum!</p>
+  <header class="bb-head"><button class="ghost sm" id="bb-back">← KEMBALI</button><div class="step" id="bb-num">PHOTOBOOTH</div></header>
+  <div class="bb-body bb-center" id="bb-cam">
+    <div class="bb-wrap"><div class="bb-stage">
+      <video id="bb-vid" playsinline muted autoplay></video>
+      <img class="bb-twb" src="assets/twibbon.webp" alt="" draggable="false">
+      <div class="bb-msg" id="bb-msg" hidden><p id="bb-msg-t"></p><button class="btn" id="bb-retry" hidden>COBA LAGI</button></div>
+      <div class="bb-cd" id="bb-cd"></div><div class="bb-flash" id="bb-flash"></div>
+    </div></div>
+    <div class="bb-ctl">
+      <button class="ghost sm" id="bb-file">DARI GALERI</button>
+      <button class="bb-shut" id="bb-shut" aria-label="Jepret" disabled></button>
+      <button class="ghost sm" id="bb-flip" hidden>PUTAR ⟲</button>
+    </div>
+    <input type="file" id="bb-in" accept="image/*" hidden>
   </div>
   <div class="bb-body bb-center" id="bb-done" hidden>
     <canvas id="bb-final" hidden></canvas><img id="bb-img" alt="Hasil photobooth">
-    <div class="hint">TEKAN LAMA GAMBAR UNTUK SIMPAN</div>
-    <div class="row"><button class="ghost" id="bb-again">FOTO LAGI</button><button class="btn" id="bb-dl">UNDUH</button></div>
-    <button class="ghost bb-pub" id="bb-pub">PAJANG DI GALERI</button><button class="btn wide" id="bb-camp">KEMBALI KE VILLA</button>
+    <div class="row"><button class="ghost" id="bb-again">FOTO ULANG</button><button class="btn" id="bb-dl">UNDUH</button></div>
+    <button class="btn wide" id="bb-share" hidden>SIMPAN / BAGIKAN</button>
+    <button class="ghost wide" id="bb-camp">KEMBALI KE VILLA</button>
   </div>
 </section>
 
@@ -1052,7 +1045,8 @@ const World=(()=>{
   solid(LANT.x-3,LANT.y-3,6,6);solid(521,502,6,6);solid(433,622,6,6);solid(521,622,6,6);
   solid(108,468,5,5);solid(288,468,5,5);solid(108,648,5,5);solid(288,648,5,5);
   solid(386,460,8,8);solid(566,460,8,8);                                 // terrace columns
-  solid(420,136,120,32);solid(455,195,50,30);solid(546,136,30,26);solid(386,340,40,50);solid(558,392,16,16);solid(552,330,24,30); // living room
+  const BOOTH={x:650,y:452};solid(BOOTH.x-23,BOOTH.y-5,46,8);solid(BOOTH.x-31,BOOTH.y+14,6,6); // twibbon photobooth in the front yard
+  solid(420,136,120,32);solid(455,195,50,30);solid(546,136,30,26);solid(558,392,16,16);solid(552,330,24,30); // living room
   solid(228,160,72,60);solid(228,320,72,60);solid(228,262,24,24);solid(330,136,46,24);                     // bedroom
   solid(590,136,146,26);solid(625,320,70,50);                                                                // kitchen
   solid(918,295,20,44);solid(918,350,20,44);                                                                 // pool loungers
@@ -1072,8 +1066,8 @@ const World=(()=>{
   ];
   const got=new Set();
 
-  const HINTS={yard:'Masuk aja lewat pintu depan! Ada mesin game AWASS !!! ADA ACHAAA !!! di ruang tengah.',terrace:'Acaranya 28–29 November 2026 di Bandung. Dicatat ya!',living:'Boombox di ruang tengah bisa dinyalain, coba deh!',booth:'Yuk ke photobooth di ruang tengah! Bisa pilih sampai 4 orang.',room:'Capek? Rebahan dulu di kamar.',kitchen:'Dapurnya lewat pintu samping ruang tengah. Ada memory di sini lho.',pool:'Kolam renangnya di sebelah kanan villa, lewat pintu dapur.',fire:'Bandung kalau malam dingin lho, jangan lupa bawa jaket!',garden:'Ada 8 memories di sekitar villa. Udah nemu berapa?'};
-  const SPOTS=[[405,575,'yard'],[575,585,'yard'],[430,452,'terrace'],[540,452,'terrace'],[430,250,'living'],[530,250,'living'],[420,320,'booth'],[520,300,'booth'],[480,290,'living'],[500,370,'booth'],[310,270,'room'],[330,200,'room'],[330,370,'room'],[610,210,'kitchen'],[680,210,'kitchen'],[610,300,'kitchen'],[700,280,'kitchen'],[770,190,'pool'],[770,400,'pool'],[925,180,'pool'],[925,410,'pool'],[850,416,'pool'],[190,500,'fire'],[120,560,'fire'],[260,560,'fire'],[190,625,'fire'],[105,510,'fire'],[275,615,'fire'],[640,565,'garden'],[735,600,'garden'],[625,625,'garden'],[600,480,'garden']];
+  const HINTS={yard:'Masuk aja lewat pintu depan! Ada mesin game AWASS !!! ADA ACHAAA !!! di ruang tengah.',terrace:'Acaranya 28–29 November 2026 di Bandung. Dicatat ya!',living:'Boombox di ruang tengah bisa dinyalain, coba deh!',booth:'Photobooth twibbon ada di depan villa! Jepret, terus langsung unduh fotonya.',room:'Capek? Rebahan dulu di kamar.',kitchen:'Dapurnya lewat pintu samping ruang tengah. Ada memory di sini lho.',pool:'Kolam renangnya di sebelah kanan villa, lewat pintu dapur.',fire:'Bandung kalau malam dingin lho, jangan lupa bawa jaket!',garden:'Ada 8 memories di sekitar villa. Udah nemu berapa?'};
+  const SPOTS=[[405,575,'yard'],[575,585,'yard'],[430,452,'terrace'],[540,452,'terrace'],[430,250,'living'],[530,250,'living'],[598,470,'booth'],[704,476,'booth'],[480,290,'living'],[724,540,'booth'],[310,270,'room'],[330,200,'room'],[330,370,'room'],[610,210,'kitchen'],[680,210,'kitchen'],[610,300,'kitchen'],[700,280,'kitchen'],[770,190,'pool'],[770,400,'pool'],[925,180,'pool'],[925,410,'pool'],[850,416,'pool'],[190,500,'fire'],[120,560,'fire'],[260,560,'fire'],[190,625,'fire'],[105,510,'fire'],[275,615,'fire'],[640,565,'garden'],[735,600,'garden'],[625,625,'garden'],[600,480,'garden']];
   const HELLO=['Halo {n}! Akhirnya ketemu di Gathering Memories.','Eh {n}! Outfit 90-an kamu boleh juga.','Wih {n} dateng! Makin rame nih.','Hai {n}, udah keliling villa belum?','{n}! Sini, sini, ngobrol dulu.'];
   let player=null,npcs=[],npcSkip=null;
 
@@ -1232,10 +1226,16 @@ const World=(()=>{
     const hallC=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c},scoreC=hallC(512,640),galC=hallC(384,256),scoreTex=new T3.CanvasTexture(scoreC),galTex=new T3.CanvasTexture(galC);
     box(1.4,58,46,'#5e3d26',575.2,54,208,{cast:false});add(new T3.PlaneGeometry(42,54),new T3.MeshBasicMaterial({map:scoreTex}),574.4,54,208,{cast:false,ry:-Math.PI/2});
     box(58,42,1.4,'#5e3d26',421,50,415.3,{cast:false});add(new T3.PlaneGeometry(54,38),new T3.MeshBasicMaterial({map:galTex}),421,50,414.4,{cast:false,ry:Math.PI});
-    // photobooth (red curtain, faces the living room)
-    box(40,62,50,'#e0312f',406,31,365);box(.8,48,38,'#2a1d1a',426.6,26,365,{cast:false});
-    for(let i=0;i<6;i++)box(.8,48,6,i%2?'#a81f2a':'#d7263d',427.2,26,349+i*6.4,{cast:false});
-    add(new T3.PlaneGeometry(46,11),new T3.MeshBasicMaterial({map:tex(textCanvas(256,70,'#f4f1ea','#e0312f','PHOTOBOOTH',30),false)}),427,56,365,{cast:false,ry:Math.PI/2});
+    // photobooth: twibbon standee + ring light in the front yard, facing the path
+    {const bx=BOOTH.x,bz=BOOTH.y,tw=40,th=Math.round(40*1935/1080);
+      [-17,17].forEach(o=>box(3,8,3,'#5e3d26',bx+o,4,bz));
+      box(tw+4,th+4,2,'#f28fb4',bx,8+th/2,bz-1.2);box(tw-2,th-2,.6,'#fde3ec',bx,8+th/2,bz-.1,{cast:false});
+      const c=document.createElement('canvas');c.width=270;c.height=484;const t=tex(c,false);
+      const im=new Image();im.onload=()=>{c.getContext('2d').drawImage(im,0,0,c.width,c.height);t.needsUpdate=true};im.src='assets/twibbon.webp';
+      add(new T3.PlaneGeometry(tw,th),new T3.MeshBasicMaterial({map:t,transparent:true,alphaTest:.4}),bx,8+th/2,bz+.4,{cast:false});
+      add(new T3.PlaneGeometry(40,10),new T3.MeshBasicMaterial({map:tex(textCanvas(256,64,'#f28fb4','#ffffff','PHOTOBOOTH',30),false)}),bx,14+th,bz+.2,{cast:false});
+      box(1.5,46,1.5,'#2a2a2e',bx-28,23,bz+17);box(8,1,8,'#2a2a2e',bx-28,.5,bz+17);
+      add(new T3.TorusGeometry(6,1.1,8,24),new T3.MeshBasicMaterial({color:'#fff6e8'}),bx-28,50,bz+17,{cast:false,ry:.5})}
     // bedroom
     [190,350].forEach((z,i)=>{box(72,10,60,'#6e472c',264,5,z);box(70,6,58,'#f4f1ea',264,13,z);box(38,6.5,58,i?'#e9a1b5':'#7fa8d6',282,13.5,z);box(16,5,40,'#ffffff',240,18,z);box(4,28,60,'#5e3d26',229,14,z)});
     box(24,20,24,'#8a5c3a',240,10,274);box(5,8,5,'#f2c94c',240,25,274);box(46,76,24,'#8a5c3a',353,38,148);box(.6,70,1,'#5e3d26',353,38,160.4,{cast:false});
@@ -1335,7 +1335,7 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
   function memText(){$('#w-mem').innerHTML='MEMORIES<b>'+got.size+'/'+ITEMS.length+'</b>'}
   const INTERACT=[
     {x:560,y:184,r:28,h:40,label:()=>Music.on?'MATIKAN':'PUTAR',act:()=>{$('#b-music').click();toast(Music.on?'♪ BOOMBOX NYALA':'BOOMBOX DIMATIKAN')}},
-    {x:446,y:365,r:28,h:70,label:()=>'PHOTOBOOTH',act:()=>Booth.open()},
+    {x:BOOTH.x,y:BOOTH.y+26,r:30,h:70,label:()=>'PHOTOBOOTH',act:()=>Booth.open()},
     {x:532,y:345,r:26,h:66,label:()=>'MAIN GAME',act:()=>go('s-run')},
     {x:548,y:208,r:30,h:88,label:()=>'PAPAN SKOR',act:()=>Hall.open('score')},
     {x:421,y:398,r:20,h:72,label:()=>'GALERI',act:()=>Hall.open('gallery')},
@@ -1555,91 +1555,73 @@ dlg={who,lines:lines.map(fill),i:0,c:0,onEnd,npc};$('#w-who').textContent=who.to
 $('#b-world').onclick=()=>go('s-world');
 
 
-/* ================= PHOTOBOOTH: pick up to 4 friends, 4 poses, one strip ================= */
+/* ================= PHOTOBOOTH: live camera framed by the event twibbon ================= */
 const Booth=(()=>{
-  const CW=510,CH=555,MAX=4,SHOTS=6;
-  const star=(x,cx,cy,r,c)=>{x.fillStyle=c;x.beginPath();for(let i=0;i<8;i++){const a=i/8*Math.PI*2-Math.PI/2,q=i%2?r*.18:r;x.lineTo(cx+Math.cos(a)*q,cy+Math.sin(a)*q)}x.closePath();x.fill()};
-  const BD=[
-    {n:'Studio Krem',c:'#e9dcc6',draw(x,w,h){const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#f6eddd');g.addColorStop(.72,'#e6d7bf');g.addColorStop(.73,'#d8c6aa');g.addColorStop(1,'#efe3d0');x.fillStyle=g;x.fillRect(0,0,w,h);
-      const v=x.createRadialGradient(w/2,h*.4,h*.2,w/2,h*.4,Math.max(w,h)*.75);v.addColorStop(0,'rgba(255,255,255,.35)');v.addColorStop(1,'rgba(90,60,30,.22)');x.fillStyle=v;x.fillRect(0,0,w,h)}},
-    {n:'Kotak Retro',c:'#f4a9c0',draw(x,w,h){const s=Math.round(w/9);for(let j=0;j*s<h+s;j++)for(let i=0;i*s<w+s;i++){x.fillStyle=(i+j)%2?'#fff4ea':'#f28fae';x.fillRect(i*s,j*s,s,s)}}},
-    {n:'Tirai Merah',c:'#a81f2a',draw(x,w,h){x.fillStyle='#c81d31';x.fillRect(0,0,w,h);const r=rng(21);let px=-8;while(px<w){const s=(w/15)*(.55+r()*1.1),g=x.createLinearGradient(px,0,px+s,0);g.addColorStop(0,'#8e101f');g.addColorStop(.35,'#e4283c');g.addColorStop(.62,'#f03a4d');g.addColorStop(1,'#a01426');x.fillStyle=g;x.fillRect(px,0,s+1,h);px+=s}
-      const t=x.createLinearGradient(0,0,0,h);t.addColorStop(0,'rgba(40,0,6,.2)');t.addColorStop(.4,'rgba(255,255,255,.03)');t.addColorStop(1,'rgba(40,0,6,.3)');x.fillStyle=t;x.fillRect(0,0,w,h)}},
-    {n:'Bintang Y2K',c:'#b9a3f2',draw(x,w,h){const g=x.createLinearGradient(0,0,w,h);g.addColorStop(0,'#c9b6ff');g.addColorStop(.5,'#f4c6ec');g.addColorStop(1,'#9fd8ff');x.fillStyle=g;x.fillRect(0,0,w,h);const r=rng(12),k=w/560;for(let i=0;i<Math.round(24*h/395);i++)star(x,r()*w,r()*h,(8+r()*24)*k,i%3?'rgba(255,255,255,.9)':'#fff27a')}},
-    {n:'Awan Pastel',c:'#a9dcf5',draw(x,w,h){const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#83cdf2');g.addColorStop(1,'#fde4ee');x.fillStyle=g;x.fillRect(0,0,w,h);const r=rng(5),k=w/560;x.fillStyle='rgba(255,255,255,.92)';for(let i=0;i<Math.round(8*h/395);i++){const cx=r()*w,cy=r()*h,q=(22+r()*20)*k;[[-1.2,.25,.7],[-.45,0,1],[.4,.08,.86],[1.15,.3,.6]].forEach(([a,b,m])=>{x.beginPath();x.arc(cx+a*q,cy+b*q,q*m,0,7);x.fill()})}}},
-    {n:'Disko Malam',c:'#2a1747',draw(x,w,h){x.fillStyle='#160b2c';x.fillRect(0,0,w,h);const bx=w/2,by=h*.02;x.globalCompositeOperation='lighter';['#ff3d81','#35d7ff','#ffe14d','#9b5cff','#3dffb0'].forEach((c,i)=>{const a=.45+i*.56;x.fillStyle=c;x.globalAlpha=.3;x.beginPath();x.moveTo(bx,by);x.lineTo(bx+Math.cos(a-.09)*h*2.3,by+Math.sin(a-.09)*h*2.3);x.lineTo(bx+Math.cos(a+.09)*h*2.3,by+Math.sin(a+.09)*h*2.3);x.fill()});x.globalAlpha=1;x.globalCompositeOperation='source-over';
-      const R=Math.min(w,h)*.09;x.save();x.beginPath();x.arc(bx,by+R*.3,R,0,7);x.clip();const s=R/3.2;for(let j=-5;j<5;j++)for(let i=-5;i<5;i++){x.fillStyle=(i*i+j*3)%3===0?'#fff':(i+j)%2?'#aab3c7':'#6e7690';x.fillRect(bx+i*s,by+R*.3+j*s,s-1,s-1)}x.restore()}},
-  ];
-  const FR=[['Hitam','#141216','#f5f2ec'],['Putih','#fbf8f2','#1c1212'],['Scarlett','#d7263d','#ffffff'],['Pink','#f6a6c1','#3a1420'],['Krem','#e7d7ba','#3a2614'],['Biru','#2f5d9e','#ffffff']];
-  let step='pick',from='s-world',picked=[],bd=2,fr=0,shot=0,run=0,sel=new Map();
-  const $b=q=>document.querySelector(q);
-  const crew=()=>[{id:'me',name:name||'Kamu',look:s},...picked.map(i=>({id:i,name:ROSTER[i].n,look:rosterLook(i)}))];
-  // Six loose, playful shots: bodies lean in, overlap and react to each other.
-  function shotSpec(sh,j,o,n){
-    const inw=o<0?'R':o>0?'L':((j+sh)%2?'L':'R'),out=inw==='R'?'L':'R',look=inw==='R'?'right':'left',odd=j%2===1,solo=n===1,pose={};let eyes='',mouth='',tilt=.05,top=false;
-    if(sh===0){pose.L=pose.R='glasses';mouth=odd?'pout':'smile';tilt=.05}
-    if(sh===1){pose[out]='head';eyes='closed';mouth=odd?'pout':'';tilt=.12}
-    if(sh===2){pose.L=pose.R='pray';eyes=look;mouth='pout';tilt=.025}
-    if(sh===3){if(!odd&&!solo){pose[inw]='reach';eyes=look;top=true;tilt=.08}else{pose[out]='peace';eyes='closed';tilt=.16}mouth='tongue'}
-    if(sh===4){pose.L='point';eyes='left';mouth='smile';tilt=.06}
-    if(sh===5){if(!odd&&!solo){pose[inw]='bunny';eyes='wink';top=true;tilt=.09}else{pose.L=pose.R='cheek';tilt=.12}mouth='laugh'}
-    return {pose,eyes,mouth,tilt:(o>0?-1:1)*tilt,top};
-  }
-  function sprite(p,spec){const key=[p.id,JSON.stringify(spec.pose),spec.eyes,spec.mouth].join('|');if(sel.has(key))return sel.get(key);
-    const c=document.createElement('canvas');c.width=W;c.height=H;paint(c.getContext('2d'),build(p.look,{pose:spec.pose,eyes:spec.eyes,mouth:spec.mouth}),0,0,1,{shadow:false});sel.set(key,c);return c}
-  function cell(x,ox,oy,sh){
-    x.save();x.translate(ox,oy);x.beginPath();x.rect(0,0,CW,CH);x.clip();BD[bd].draw(x,CW,CH);
-    const c=crew(),n=c.length,sc=[12,11,9,8,8][n-1],gap=[0,17,15,11,10][n-1]*sc,base=CH-45*sc;x.imageSmoothingEnabled=false;
-    c.map((p,j)=>{const o=j-(n-1)/2;return {p,j,o,spec:shotSpec(sh,j,o,n),back:n>=4&&j%2===1}})
-     .sort((a,b)=>(b.back-a.back)||(a.spec.top-b.spec.top)||(Math.abs(b.o)-Math.abs(a.o)))
-     .forEach(({p,j,o,spec,back})=>{const wob=[0,5,-4,7,-3,4][(sh+j)%6],lean=spec.tilt*sc*2;
-       x.save();x.translate(CW/2+o*gap+lean,base+40*sc+wob-(back?7*sc:0));x.rotate(spec.tilt);x.drawImage(sprite(p,spec),-17*sc,-40*sc,W*sc,H*sc);x.restore()});
-    x.restore();
-  }
-  async function finalCard(){
-    try{await Promise.all(['800 44px Archivo','700 21px Silkscreen'].map(f=>document.fonts.load(f)))}catch(e){}
-    const cv=$b('#bb-final'),x=cv.getContext('2d'),[,bg,fg]=FR[fr];cv.width=1080;cv.height=1920;x.fillStyle=bg;x.fillRect(0,0,1080,1920);
-    for(let i=0;i<SHOTS;i++)cell(x,20+(i%2)*530,24+Math.floor(i/2)*(CH+20),i);
-    x.textAlign='center';x.fillStyle=fg;x.font='800 44px Archivo, sans-serif';x.fillText('Gathering Memories',540,1788,980);
-    x.font='700 21px Silkscreen, monospace';x.fillText(crew().map(p=>p.name.toUpperCase()).join(' · '),540,1830,1000);
-    x.globalAlpha=.8;x.fillText('THE SCARLETT HOUSE · 28-29 NOV 2026 · BANDUNG',540,1870,1000);x.globalAlpha=1;
-    $b('#bb-img').src=cv.toDataURL('image/png');
-  }
-  const show=st=>{step=st;['pick','style','shoot','done'].forEach(k=>$b('#bb-'+k).hidden=k!==st);$b('#bb-num').textContent=({pick:'1 / 3',style:'2 / 3',shoot:'3 / 3',done:'SELESAI'})[st];$b('#bb-back').hidden=st==='shoot'};
-  function renderPick(){
-    const q=$b('#bb-search').value.trim().toLowerCase(),self=rosterSelf(),g=$b('#bb-grid');g.innerHTML='';$b('#bb-count').textContent=picked.length+' / '+MAX+' DIPILIH';
-    $b('#bb-next').textContent=picked.length?'LANJUT':'FOTO SENDIRI';
-    ROSTER.forEach((r,i)=>{if(i===self||(q&&!r.n.toLowerCase().includes(q)))return;const on=picked.includes(i),b=document.createElement('button');b.className='bp'+(on?' on':'');b.disabled=!on&&picked.length>=MAX;
-      const cv=document.createElement('canvas');drawTo(cv,rosterLook(i),3,{crop:CROP.head,shadow:false});const sp=document.createElement('span');sp.textContent=r.n;b.append(cv,sp);
-      if(r.tag){const o=document.createElement('i');o.textContent=r.tag;b.append(o)}
-      b.onclick=()=>{picked=on?picked.filter(x=>x!==i):[...picked,i];renderPick()};g.append(b)});
-  }
-  const preview=()=>{const c=$b('#bb-prev'),x=c.getContext('2d');c.width=CW+36;c.height=CH+36;x.fillStyle=FR[fr][1];x.fillRect(0,0,c.width,c.height);cell(x,18,18,0)};
-  function renderStyle(){
-    const a=$b('#bb-bds');a.innerHTML='';BD.forEach((d,i)=>{const b=document.createElement('button');b.className='bs'+(i===bd?' on':'');const c=document.createElement('canvas');c.width=120;c.height=84;d.draw(c.getContext('2d'),120,84);const t=document.createElement('span');t.textContent=d.n;b.append(c,t);b.onclick=()=>{bd=i;renderStyle()};a.append(b)});
-    const f=$b('#bb-frs');f.innerHTML='';FR.forEach((d,i)=>{const b=document.createElement('button');b.className='swb'+(i===fr?' on':'');b.style.background=d[1];b.setAttribute('aria-label','Frame '+d[0]);b.onclick=()=>{fr=i;renderStyle()};f.append(b)});
-    preview();
-  }
+  const OW=1080,OH=1935,$b=q=>document.querySelector(q),vid=$b('#bb-vid');
+  const twb=new Image();twb.src='assets/twibbon.webp';
+  const twbReady=new Promise(r=>{if(twb.complete)r();else{twb.onload=twb.onerror=()=>r()}});
+  let from='s-world',step='cam',stream=null,facing='user',camRun=0,shotRun=0,shooting=false,blob=null,url='';
+  const show=st=>{step=st;['cam','done'].forEach(k=>$b('#bb-'+k).hidden=k!==st);$b('#bb-num').textContent=st==='cam'?'PHOTOBOOTH':'HASIL FOTO'};
+  const msg=(t,retry=false)=>{$b('#bb-msg').hidden=!t;$b('#bb-msg-t').textContent=t||'';$b('#bb-retry').hidden=!retry};
   const beep=(m,d=.08)=>{if(Music.on&&Music.ctx&&Music.ctx.state==='running')Music.tone('square',mtof(m),Music.ctx.currentTime,d,.06)};
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
-  async function shoot(){
-    const my=++run;show('shoot');const c=$b('#bb-live'),x=c.getContext('2d');c.width=CW;c.height=CH;
-    for(shot=0;shot<SHOTS;shot++){
-      cell(x,0,0,shot);$b('#bb-shot').textContent='POSE '+(shot+1)+' / '+SHOTS;
-      for(const n of [3,2,1]){if(my!==run)return;$b('#bb-cd').textContent=n;beep(72);await wait(480)}
-      if(my!==run)return;$b('#bb-cd').textContent='';beep(88,.16);const f=$b('#bb-flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');await wait(480);
+  function stopCam(){camRun++;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}vid.srcObject=null;$b('#bb-shut').disabled=true}
+  async function startCam(){
+    stopCam();const my=camRun;
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){msg('Browser ini belum bisa membuka kamera. Pakai tombol DARI GALERI ya.');return}
+    msg('Menyalakan kamera…');
+    try{
+      const s=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:facing,width:{ideal:1920},height:{ideal:1080}}});
+      if(my!==camRun||cur!=='s-booth'||step!=='cam'){s.getTracks().forEach(t=>t.stop());return}
+      stream=s;vid.srcObject=s;vid.classList.toggle('mir',facing==='user');
+      try{await vid.play()}catch(e){}
+      msg('');$b('#bb-shut').disabled=false;
+      navigator.mediaDevices.enumerateDevices().then(d=>{$b('#bb-flip').hidden=d.filter(x=>x.kind==='videoinput').length<2}).catch(()=>{});
+    }catch(e){
+      if(my!==camRun)return;const n=e&&e.name;
+      msg(n==='NotAllowedError'||n==='SecurityError'?'Akses kamera ditolak. Izinkan kamera untuk situs ini di pengaturan browser, lalu coba lagi.':n==='NotFoundError'||n==='OverconstrainedError'?'Kamera tidak ditemukan. Pakai tombol DARI GALERI ya.':'Kamera gagal dinyalakan. Mungkin sedang dipakai aplikasi lain.',true);
     }
-    if(my!==run)return;await finalCard();{const b=$b('#bb-pub');b.disabled=false;b.textContent='PAJANG DI GALERI'}show('done');
   }
-  $b('#bb-pub').onclick=async()=>{const b=$b('#bb-pub');b.disabled=true;b.textContent='MENGIRIM…';try{await Hall.publish($b('#bb-final'),crew().map(p=>p.name));b.textContent='SUDAH DIPAJANG ✓'}catch(e){b.disabled=false;b.textContent='GAGAL, COBA LAGI'}};
-  $b('#bb-search').oninput=renderPick;
-  $b('#bb-next').onclick=()=>{show('style');renderStyle()};
-  $b('#bb-go').onclick=shoot;
-  $b('#bb-again').onclick=()=>{show('style');renderStyle()};
-  $b('#bb-camp').onclick=()=>{run++;go(from)};
-  $b('#bb-back').onclick=()=>{run++;if(step==='pick')go(from);else if(step==='style'){show('pick');renderPick()}else{show('style');renderStyle()}};
-  $b('#bb-dl').onclick=async()=>{const fn='photobooth-'+(name||'gathering').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.png',blob=await new Promise(r=>$b('#bb-final').toBlob(r,'image/png')),a=document.createElement('a');a.download=fn;a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)};
-  return {open(){from=cur==='s-booth'?from:cur;sel=new Map();picked=picked.filter(i=>i!==rosterSelf());$b('#bb-search').value='';go('s-booth');show('pick');renderPick()}};
+  // Photo fills the whole card (cover crop, same as the preview), twibbon on top. Saved un-mirrored.
+  async function compose(src,sw,sh){
+    const cv=$b('#bb-final'),x=cv.getContext('2d');cv.width=OW;cv.height=OH;
+    x.fillStyle='#fff';x.fillRect(0,0,OW,OH);
+    const k=Math.max(OW/sw,OH/sh),w=sw*k,h=sh*k;x.drawImage(src,(OW-w)/2,(OH-h)/2,w,h);
+    await twbReady;if(twb.naturalWidth)x.drawImage(twb,0,0,OW,OH);
+    blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92));
+    if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(blob);$b('#bb-img').src=url;
+    const f=file();$b('#bb-share').hidden=!(f&&navigator.canShare&&navigator.canShare({files:[f]}));
+    stopCam();show('done');
+  }
+  const fname=()=>'scarlett-photobooth-'+((name||'gathering').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'gathering')+'-'+Date.now().toString(36)+'.jpg';
+  const file=()=>{try{return blob&&new File([blob],fname(),{type:'image/jpeg'})}catch(e){return null}};
+  async function snap(){
+    if(!stream||shooting)return;shooting=true;const my=++shotRun;
+    ['#bb-shut','#bb-file','#bb-flip'].forEach(q=>$b(q).disabled=true);
+    try{
+      for(const n of [3,2,1]){if(my!==shotRun)return;$b('#bb-cd').textContent=n;beep(72);await wait(750)}
+      if(my!==shotRun||!stream)return;$b('#bb-cd').textContent='';beep(88,.16);
+      const f=$b('#bb-flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');
+      const w=vid.videoWidth,h=vid.videoHeight;if(!w||!h)return;
+      const grab=document.createElement('canvas');grab.width=w;grab.height=h;grab.getContext('2d').drawImage(vid,0,0,w,h);
+      await wait(380);if(my!==shotRun)return;await compose(grab,w,h);
+    }finally{shooting=false;$b('#bb-cd').textContent='';['#bb-file','#bb-flip'].forEach(q=>$b(q).disabled=false);$b('#bb-shut').disabled=!stream}
+  }
+  function leave(){shotRun++;stopCam();go(from)}
+  $b('#bb-shut').onclick=snap;
+  $b('#bb-retry').onclick=startCam;
+  $b('#bb-flip').onclick=()=>{facing=facing==='user'?'environment':'user';startCam()};
+  $b('#bb-file').onclick=()=>$b('#bb-in').click();
+  $b('#bb-in').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;const u=URL.createObjectURL(f),im=new Image();
+    im.onload=()=>{compose(im,im.naturalWidth,im.naturalHeight).finally(()=>URL.revokeObjectURL(u))};im.onerror=()=>{URL.revokeObjectURL(u);msg('Foto itu tidak bisa dibuka. Coba foto lain ya.',!stream)};im.src=u};
+  $b('#bb-again').onclick=()=>{show('cam');startCam()};
+  $b('#bb-back').onclick=()=>{if(step==='done'){show('cam');startCam()}else leave()};
+  $b('#bb-camp').onclick=leave;
+  $b('#bb-dl').onclick=()=>{if(!url)return;const a=document.createElement('a');a.download=fname();a.href=url;document.body.append(a);a.click();a.remove()};
+  $b('#bb-share').onclick=()=>{const f=file();if(f)navigator.share({files:[f],title:'Memories Gathering · Scarlett House'}).catch(()=>{})};
+  // Phones cut the camera when the tab is hidden: release it and reopen on return.
+  document.addEventListener('visibilitychange',()=>{if(cur!=='s-booth'||step!=='cam')return;if(document.hidden){shotRun++;stopCam()}else if(!stream)startCam()});
+  return {open(){if(cur!=='s-booth')from=cur;go('s-booth');show('cam');startCam()}};
 })();
 $('#w-booth').onclick=()=>Booth.open();
 
