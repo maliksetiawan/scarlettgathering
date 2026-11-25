@@ -170,7 +170,15 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 .bb-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}.bb-flash.go{animation:bbf .5s ease-out}
 @keyframes bbf{0%{opacity:1}100%{opacity:0}}
 .bb-ctl{flex:none;width:100%;max-width:420px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
-.bb-ctl .ghost{justify-self:start}.bb-ctl #bb-flip{grid-column:3;justify-self:end}
+.bb-ctl .ghost{justify-self:start}
+.bb-opts{flex:none;width:100%;max-width:420px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bb-seg{display:inline-flex;border:2px solid rgba(255,255,255,.22);background:rgba(10,8,14,.6)}
+.bb-seg button,.bb-fl{font:400 11px Silkscreen,monospace;letter-spacing:.1em;color:#ddd6e2;height:36px;padding:0 12px;white-space:nowrap}
+.bb-seg button.on{background:#f28fb4;color:#1c1212}
+.bb-fl{margin-left:auto;border:2px solid rgba(255,255,255,.22);background:rgba(10,8,14,.6)}
+.bb-fl.on{background:#f2c94c;border-color:#f2c94c;color:#1c1212}
+.bb-opts button:disabled{opacity:.4}
+.bb-light{position:fixed;inset:0;z-index:50;background:#fff}
 .bb-shut{width:76px;height:76px;border-radius:50%;background:#fff;border:6px solid #f28fb4;box-shadow:0 0 0 3px #fff,0 6px 16px rgba(0,0,0,.45);transition:transform .08s}
 .bb-shut:active{transform:scale(.92)}.bb-shut:disabled{opacity:.35}
 #bb-img{flex:0 1 auto;min-height:0;max-height:calc(100% - 190px);width:auto;max-width:100%;border-radius:6px;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
@@ -327,11 +335,15 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
       <div class="bb-msg" id="bb-msg" hidden><p id="bb-msg-t"></p><button class="btn" id="bb-retry" hidden>COBA LAGI</button></div>
       <div class="bb-cd" id="bb-cd"></div><div class="bb-flash" id="bb-flash"></div>
     </div></div>
+    <div class="bb-opts">
+      <div class="bb-seg" id="bb-seg" role="group" aria-label="Pilih kamera"><button data-face="user" class="on">DEPAN</button><button data-face="environment">BELAKANG</button></div>
+      <button class="bb-fl" id="bb-fl" aria-pressed="false">⚡ FLASH OFF</button>
+    </div>
     <div class="bb-ctl">
       <button class="ghost sm" id="bb-file">DARI GALERI</button>
       <button class="bb-shut" id="bb-shut" aria-label="Jepret" disabled></button>
-      <button class="ghost sm" id="bb-flip" hidden>PUTAR ⟲</button>
     </div>
+    <div class="bb-light" id="bb-light" hidden></div>
     <input type="file" id="bb-in" accept="image/*" hidden>
   </div>
   <div class="bb-body bb-center" id="bb-done" hidden>
@@ -1045,7 +1057,7 @@ const World=(()=>{
   solid(LANT.x-3,LANT.y-3,6,6);solid(521,502,6,6);solid(433,622,6,6);solid(521,622,6,6);
   solid(108,468,5,5);solid(288,468,5,5);solid(108,648,5,5);solid(288,648,5,5);
   solid(386,460,8,8);solid(566,460,8,8);                                 // terrace columns
-  const BOOTH={x:650,y:452};solid(BOOTH.x-23,BOOTH.y-5,46,8);solid(BOOTH.x-31,BOOTH.y+14,6,6); // twibbon photobooth in the front yard
+  const BOOTH={x:532,y:431};solid(BOOTH.x-23,BOOTH.y-4,46,8);solid(BOOTH.x+29,BOOTH.y+11,6,6); // twibbon photobooth right beside the front door
   solid(420,136,120,32);solid(455,195,50,30);solid(546,136,30,26);solid(558,392,16,16);solid(552,330,24,30); // living room
   solid(228,160,72,60);solid(228,320,72,60);solid(228,262,24,24);solid(330,136,46,24);                     // bedroom
   solid(590,136,146,26);solid(625,320,70,50);                                                                // kitchen
@@ -1066,8 +1078,8 @@ const World=(()=>{
   ];
   const got=new Set();
 
-  const HINTS={yard:'Masuk aja lewat pintu depan! Ada mesin game AWASS !!! ADA ACHAAA !!! di ruang tengah.',terrace:'Acaranya 28–29 November 2026 di Bandung. Dicatat ya!',living:'Boombox di ruang tengah bisa dinyalain, coba deh!',booth:'Photobooth twibbon ada di depan villa! Jepret, terus langsung unduh fotonya.',room:'Capek? Rebahan dulu di kamar.',kitchen:'Dapurnya lewat pintu samping ruang tengah. Ada memory di sini lho.',pool:'Kolam renangnya di sebelah kanan villa, lewat pintu dapur.',fire:'Bandung kalau malam dingin lho, jangan lupa bawa jaket!',garden:'Ada 8 memories di sekitar villa. Udah nemu berapa?'};
-  const SPOTS=[[405,575,'yard'],[575,585,'yard'],[430,452,'terrace'],[540,452,'terrace'],[430,250,'living'],[530,250,'living'],[598,470,'booth'],[704,476,'booth'],[480,290,'living'],[724,540,'booth'],[310,270,'room'],[330,200,'room'],[330,370,'room'],[610,210,'kitchen'],[680,210,'kitchen'],[610,300,'kitchen'],[700,280,'kitchen'],[770,190,'pool'],[770,400,'pool'],[925,180,'pool'],[925,410,'pool'],[850,416,'pool'],[190,500,'fire'],[120,560,'fire'],[260,560,'fire'],[190,625,'fire'],[105,510,'fire'],[275,615,'fire'],[640,565,'garden'],[735,600,'garden'],[625,625,'garden'],[600,480,'garden']];
+  const HINTS={yard:'Masuk aja lewat pintu depan! Ada mesin game AWASS !!! ADA ACHAAA !!! di ruang tengah.',terrace:'Acaranya 28–29 November 2026 di Bandung. Dicatat ya!',living:'Boombox di ruang tengah bisa dinyalain, coba deh!',booth:'Photobooth twibbon ada di samping pintu depan! Jepret, terus langsung unduh fotonya.',room:'Capek? Rebahan dulu di kamar.',kitchen:'Dapurnya lewat pintu samping ruang tengah. Ada memory di sini lho.',pool:'Kolam renangnya di sebelah kanan villa, lewat pintu dapur.',fire:'Bandung kalau malam dingin lho, jangan lupa bawa jaket!',garden:'Ada 8 memories di sekitar villa. Udah nemu berapa?'};
+  const SPOTS=[[405,575,'yard'],[575,585,'yard'],[420,452,'terrace'],[600,470,'terrace'],[430,250,'living'],[530,250,'living'],[600,505,'booth'],[612,545,'booth'],[480,290,'living'],[455,548,'booth'],[310,270,'room'],[330,200,'room'],[330,370,'room'],[610,210,'kitchen'],[680,210,'kitchen'],[610,300,'kitchen'],[700,280,'kitchen'],[770,190,'pool'],[770,400,'pool'],[925,180,'pool'],[925,410,'pool'],[850,416,'pool'],[190,500,'fire'],[120,560,'fire'],[260,560,'fire'],[190,625,'fire'],[105,510,'fire'],[275,615,'fire'],[640,565,'garden'],[735,600,'garden'],[625,625,'garden'],[600,480,'garden']];
   const HELLO=['Halo {n}! Akhirnya ketemu di Gathering Memories.','Eh {n}! Outfit 90-an kamu boleh juga.','Wih {n} dateng! Makin rame nih.','Hai {n}, udah keliling villa belum?','{n}! Sini, sini, ngobrol dulu.'];
   let player=null,npcs=[],npcSkip=null;
 
@@ -1226,7 +1238,7 @@ const World=(()=>{
     const hallC=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c},scoreC=hallC(512,640),galC=hallC(384,256),scoreTex=new T3.CanvasTexture(scoreC),galTex=new T3.CanvasTexture(galC);
     box(1.4,58,46,'#5e3d26',575.2,54,208,{cast:false});add(new T3.PlaneGeometry(42,54),new T3.MeshBasicMaterial({map:scoreTex}),574.4,54,208,{cast:false,ry:-Math.PI/2});
     box(58,42,1.4,'#5e3d26',421,50,415.3,{cast:false});add(new T3.PlaneGeometry(54,38),new T3.MeshBasicMaterial({map:galTex}),421,50,414.4,{cast:false,ry:Math.PI});
-    // photobooth: twibbon standee + ring light in the front yard, facing the path
+    // photobooth: twibbon standee + ring light on the terrace, right of the front door
     {const bx=BOOTH.x,bz=BOOTH.y,tw=40,th=Math.round(40*1935/1080);
       [-17,17].forEach(o=>box(3,8,3,'#5e3d26',bx+o,4,bz));
       box(tw+4,th+4,2,'#f28fb4',bx,8+th/2,bz-1.2);box(tw-2,th-2,.6,'#fde3ec',bx,8+th/2,bz-.1,{cast:false});
@@ -1234,8 +1246,8 @@ const World=(()=>{
       const im=new Image();im.onload=()=>{c.getContext('2d').drawImage(im,0,0,c.width,c.height);t.needsUpdate=true};im.src='assets/twibbon.webp';
       add(new T3.PlaneGeometry(tw,th),new T3.MeshBasicMaterial({map:t,transparent:true,alphaTest:.4}),bx,8+th/2,bz+.4,{cast:false});
       add(new T3.PlaneGeometry(40,10),new T3.MeshBasicMaterial({map:tex(textCanvas(256,64,'#f28fb4','#ffffff','PHOTOBOOTH',30),false)}),bx,14+th,bz+.2,{cast:false});
-      box(1.5,46,1.5,'#2a2a2e',bx-28,23,bz+17);box(8,1,8,'#2a2a2e',bx-28,.5,bz+17);
-      add(new T3.TorusGeometry(6,1.1,8,24),new T3.MeshBasicMaterial({color:'#fff6e8'}),bx-28,50,bz+17,{cast:false,ry:.5})}
+      box(1.5,46,1.5,'#2a2a2e',bx+32,23,bz+14);box(8,1,8,'#2a2a2e',bx+32,.5,bz+14);
+      add(new T3.TorusGeometry(6,1.1,8,24),new T3.MeshBasicMaterial({color:'#fff6e8'}),bx+32,50,bz+14,{cast:false,ry:-.5})}
     // bedroom
     [190,350].forEach((z,i)=>{box(72,10,60,'#6e472c',264,5,z);box(70,6,58,'#f4f1ea',264,13,z);box(38,6.5,58,i?'#e9a1b5':'#7fa8d6',282,13.5,z);box(16,5,40,'#ffffff',240,18,z);box(4,28,60,'#5e3d26',229,14,z)});
     box(24,20,24,'#8a5c3a',240,10,274);box(5,8,5,'#f2c94c',240,25,274);box(46,76,24,'#8a5c3a',353,38,148);box(.6,70,1,'#5e3d26',353,38,160.4,{cast:false});
@@ -1560,7 +1572,16 @@ const Booth=(()=>{
   const OW=1080,OH=1935,$b=q=>document.querySelector(q),vid=$b('#bb-vid');
   const twb=new Image();twb.src='assets/twibbon.webp';
   const twbReady=new Promise(r=>{if(twb.complete)r();else{twb.onload=twb.onerror=()=>r()}});
-  let from='s-world',step='cam',stream=null,facing='user',camRun=0,shotRun=0,shooting=false,blob=null,url='';
+  let from='s-world',step='cam',stream=null,facing='user',camRun=0,shotRun=0,shooting=false,blob=null,url='',flash=false,torchOK=false;
+  const track=()=>stream&&stream.getVideoTracks()[0];
+  // Back camera: the phone's own LED (torch) where the browser exposes it. Otherwise: light the face with a white screen.
+  const torch=on=>{const t=track();return t&&torchOK?t.applyConstraints({advanced:[{torch:on}]}).catch(()=>{}):Promise.resolve()};
+  function opts(){
+    document.querySelectorAll('#bb-seg button').forEach(b=>b.classList.toggle('on',b.dataset.face===facing));
+    const fl=$b('#bb-fl');fl.classList.toggle('on',flash);fl.setAttribute('aria-pressed',flash);fl.textContent='⚡ FLASH '+(flash?'ON':'OFF');
+    fl.hidden=facing==='environment'&&!!stream&&!torchOK;   // back camera with no LED access: a screen flash would light the wrong side
+  }
+  const lock=on=>['#bb-shut','#bb-file','#bb-fl','#bb-seg button'].forEach(q=>document.querySelectorAll(q).forEach(b=>b.disabled=on||(q==='#bb-shut'&&!stream)));
   const show=st=>{step=st;['cam','done'].forEach(k=>$b('#bb-'+k).hidden=k!==st);$b('#bb-num').textContent=st==='cam'?'PHOTOBOOTH':'HASIL FOTO'};
   const msg=(t,retry=false)=>{$b('#bb-msg').hidden=!t;$b('#bb-msg-t').textContent=t||'';$b('#bb-retry').hidden=!retry};
   const beep=(m,d=.08)=>{if(Music.on&&Music.ctx&&Music.ctx.state==='running')Music.tone('square',mtof(m),Music.ctx.currentTime,d,.06)};
@@ -1573,10 +1594,12 @@ const Booth=(()=>{
     try{
       const s=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:facing,width:{ideal:1920},height:{ideal:1080}}});
       if(my!==camRun||cur!=='s-booth'||step!=='cam'){s.getTracks().forEach(t=>t.stop());return}
-      stream=s;vid.srcObject=s;vid.classList.toggle('mir',facing==='user');
+      stream=s;vid.srcObject=s;
+      const t=track(),fm=t&&t.getSettings?t.getSettings().facingMode:'';vid.classList.toggle('mir',fm?fm==='user':facing==='user');
+      try{torchOK=!!(t&&t.getCapabilities&&t.getCapabilities().torch)}catch(e){torchOK=false}
       try{await vid.play()}catch(e){}
-      msg('');$b('#bb-shut').disabled=false;
-      navigator.mediaDevices.enumerateDevices().then(d=>{$b('#bb-flip').hidden=d.filter(x=>x.kind==='videoinput').length<2}).catch(()=>{});
+      msg('');$b('#bb-shut').disabled=false;opts();
+      navigator.mediaDevices.enumerateDevices().then(d=>{$b('#bb-seg').hidden=d.filter(x=>x.kind==='videoinput').length<2}).catch(()=>{});
     }catch(e){
       if(my!==camRun)return;const n=e&&e.name;
       msg(n==='NotAllowedError'||n==='SecurityError'?'Akses kamera ditolak. Izinkan kamera untuk situs ini di pengaturan browser, lalu coba lagi.':n==='NotFoundError'||n==='OverconstrainedError'?'Kamera tidak ditemukan. Pakai tombol DARI GALERI ya.':'Kamera gagal dinyalakan. Mungkin sedang dipakai aplikasi lain.',true);
@@ -1597,20 +1620,23 @@ const Booth=(()=>{
   const file=()=>{try{return blob&&new File([blob],fname(),{type:'image/jpeg'})}catch(e){return null}};
   async function snap(){
     if(!stream||shooting)return;shooting=true;const my=++shotRun;
-    ['#bb-shut','#bb-file','#bb-flip'].forEach(q=>$b(q).disabled=true);
+    lock(true);const led=flash&&facing==='environment'&&torchOK,screen=flash&&!led;
     try{
-      for(const n of [3,2,1]){if(my!==shotRun)return;$b('#bb-cd').textContent=n;beep(72);await wait(750)}
+      for(const n of [3,2,1]){if(my!==shotRun)return;$b('#bb-cd').textContent=n;beep(72);if(n===1&&led)torch(true);await wait(750)}
       if(my!==shotRun||!stream)return;$b('#bb-cd').textContent='';beep(88,.16);
-      const f=$b('#bb-flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');
+      if(screen){$b('#bb-light').hidden=false;await wait(450);if(my!==shotRun||!stream)return}   // give auto-exposure time to settle on the lit face
       const w=vid.videoWidth,h=vid.videoHeight;if(!w||!h)return;
       const grab=document.createElement('canvas');grab.width=w;grab.height=h;grab.getContext('2d').drawImage(vid,0,0,w,h);
+      $b('#bb-light').hidden=true;torch(false);
+      const f=$b('#bb-flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');
       await wait(380);if(my!==shotRun)return;await compose(grab,w,h);
-    }finally{shooting=false;$b('#bb-cd').textContent='';['#bb-file','#bb-flip'].forEach(q=>$b(q).disabled=false);$b('#bb-shut').disabled=!stream}
+    }finally{shooting=false;$b('#bb-cd').textContent='';$b('#bb-light').hidden=true;if(led)torch(false);lock(false)}
   }
   function leave(){shotRun++;stopCam();go(from)}
   $b('#bb-shut').onclick=snap;
   $b('#bb-retry').onclick=startCam;
-  $b('#bb-flip').onclick=()=>{facing=facing==='user'?'environment':'user';startCam()};
+  document.querySelectorAll('#bb-seg button').forEach(b=>b.onclick=()=>{if(b.dataset.face===facing||shooting)return;facing=b.dataset.face;torchOK=false;opts();startCam()});
+  $b('#bb-fl').onclick=()=>{flash=!flash;opts()};
   $b('#bb-file').onclick=()=>$b('#bb-in').click();
   $b('#bb-in').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;const u=URL.createObjectURL(f),im=new Image();
     im.onload=()=>{compose(im,im.naturalWidth,im.naturalHeight).finally(()=>URL.revokeObjectURL(u))};im.onerror=()=>{URL.revokeObjectURL(u);msg('Foto itu tidak bisa dibuka. Coba foto lain ya.',!stream)};im.src=u};
