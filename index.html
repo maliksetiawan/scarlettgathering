@@ -219,6 +219,12 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 .lb{display:flex;flex-direction:column;gap:14px;min-height:100%}
 .lb-sub{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#c9c1cf;font-size:13px;font-weight:500}
 .lb-live{display:inline-flex;align-items:center;gap:6px;flex:none;color:#7ff0b4;font-size:12px;font-weight:700}.lb-live i{width:7px;height:7px;border-radius:50%;background:currentColor;animation:lbpulse 1.6s infinite}
+.lb-live.done{color:#ffd35c}.lb-live.done i{animation:none}
+.lb-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:none}
+.lb-tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;border-radius:14px;background:rgba(255,255,255,.07);border:2px solid transparent;color:#c9c1cf;font:inherit}
+.lb-tabs button b{font:900 17px Archivo,system-ui,sans-serif;letter-spacing:.02em;color:#fff}.lb-tabs button small{font-size:11px;font-weight:700;letter-spacing:.06em}
+.lb-tabs button.on{background:rgba(224,49,47,.18);border-color:#e0312f}.lb-tabs button.on small{color:#ffd35c}
+.lb-season-note{flex:none;padding:10px 14px;border-radius:14px;background:rgba(255,211,92,.1);border:1px solid rgba(255,211,92,.35);color:#ece6f0;font-size:13px;text-align:center}.lb-season-note b{color:#ffd35c}
 @keyframes lbpulse{0%{box-shadow:0 0 0 0 rgba(127,240,180,.55)}100%{box-shadow:0 0 0 8px rgba(127,240,180,0)}}
 .lb-pod{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end}
 .lb-p{--c:#d9dde6;display:flex;flex-direction:column;align-items:center;min-width:0}.lb-p.r1{--c:#ffd35c}.lb-p.r3{--c:#ee9d62}
@@ -1999,8 +2005,18 @@ const Hall=(()=>{
   async function api(path,opt={}){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);
     try{const r=await fetch(SB_URL+path,{...opt,signal:c.signal,headers:{apikey:SB_KEY,...(opt.headers||{})}});if(!r.ok)throw new Error('HTTP '+r.status);const x=await r.text();return x?JSON.parse(x):null}finally{clearTimeout(t)}}
   const publicUrl=p=>SB_URL+'/storage/v1/object/public/booth/'+p.split('/').map(encodeURIComponent).join('/');
-  let hasLook=true;
-  const loadScores=async()=>{const r=await api('/rest/v1/scores?select='+(hasLook?'name,score,meters,coins,look':'name,score,meters,coins')+'&score=gt.0&order=score.desc,updated_at.asc&limit=100').catch(e=>{if(hasLook&&e.message==='HTTP 400'){hasLook=false;return loadScores()}throw e});if(r!==scores)scores=r||[];return scores};
+  // Seasons: the server files each score by its own clock; this only picks which board to show.
+  const S2_AT=Date.parse('2026-11-28T00:00:00+07:00'),liveSeason=()=>Date.now()>=S2_AT?2:1;
+  let hasLook=true,hasSeason=true,season=liveSeason();
+  const loadScores=async()=>{const want=season;
+    if(!hasSeason&&want>1){scores=[];return scores}   // database not upgraded yet: everything is Season 1
+    const r=await api('/rest/v1/scores?select='+(hasLook?'name,score,meters,coins,look':'name,score,meters,coins')+(hasSeason?'&season=eq.'+want:'')+'&score=gt.0&order=score.desc,updated_at.asc&limit=100')
+      .catch(e=>{if(e.message!=='HTTP 400')throw e;if(hasSeason){hasSeason=false;return loadScores()}if(hasLook){hasLook=false;return loadScores()}throw e});
+    if(want===season&&r!==scores)scores=r||[];return scores};
+  const left=()=>{const s=Math.max(0,Math.ceil((S2_AT-Date.now())/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),d=s%60;return (h?h+' jam ':'')+(h||m?m+' menit ':'')+d+' detik'};
+  // Countdown ticks every second; when it hits zero the open board flips to the new season.
+  setInterval(()=>{if(!isOpen||mode!=='score')return;const e=$h('.lb-season-note span');if(e)e.textContent=' ditutup 00.00 WIB · '+left()+' lagi';
+    if(e&&liveSeason()>1){season=liveSeason();sig='';loadScores().then(()=>{if(isOpen&&mode==='score')renderScore(true)}).catch(()=>{})}},1000);
   const loadPhotos=async()=>{photos=await api('/rest/v1/photos?select=id,names,path,created_at&order=created_at.desc&limit=60')||[];return photos};
   const myName=()=>(name||'').replace(/[^\p{L}\p{N} ._'-]/gu,'').replace(/\s+/g,' ').trim().slice(0,16),same=(a,b)=>!!a&&!!b&&a.toLowerCase()===b.toLowerCase();
   // Avatars come from other visitors, so only known catalog ids and plain hex colors are drawn.
@@ -2021,7 +2037,7 @@ const Hall=(()=>{
   const tag=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e},num=v=>Number(v).toLocaleString('id-ID');
   const podFace=(r,i)=>{const lk=lookOf(r);if(!lk)return face(r,'full');const f=podFrames(lk,i),cv=tag('canvas');cv.width=f[0].width;cv.height=f[0].height;cv.getContext('2d').drawImage(frameOf(f,i),0,0);cv.setAttribute('role','img');cv.setAttribute('aria-label','Avatar '+r.name+(i?' tepuk tangan':' mengangkat piala'));pods.push({cv,f,i});return cv};
   const face=(r,kind)=>{const lk=lookOf(r);if(!lk)return tag('div','lb-init',[...r.name][0].toUpperCase());const i=tag('img',kind==='full'?'':'lb-av');i.alt='Avatar '+r.name;i.src=art(lk,kind).toDataURL();return i};
-  function paintScore(W_){const c=W_.scoreC,x=c.getContext('2d'),k=c.width/256;x.setTransform(k,0,0,k,0,0);x.imageSmoothingEnabled=false;x.textBaseline='middle';x.textAlign='center';x.fillStyle='#17131b';x.fillRect(0,0,256,320);x.fillStyle='#e0312f';x.fillRect(0,0,256,48);x.fillStyle='#fff';x.font='700 24px Silkscreen, monospace';x.fillText('PAPAN SKOR',128,25,236);
+  function paintScore(W_){const c=W_.scoreC,x=c.getContext('2d'),k=c.width/256;x.setTransform(k,0,0,k,0,0);x.imageSmoothingEnabled=false;x.textBaseline='middle';x.textAlign='center';x.fillStyle='#17131b';x.fillRect(0,0,256,320);x.fillStyle='#e0312f';x.fillRect(0,0,256,48);x.fillStyle='#fff';x.font='700 24px Silkscreen, monospace';x.fillText(liveSeason()>1?'SKOR SEASON '+season:'PAPAN SKOR',128,25,236);
       const who=(r,kind,dx,dy,dw,dh)=>{const lk=lookOf(r);if(lk)return x.drawImage(art(lk,kind),dx,dy,dw,dh);const q=Math.min(dw,40),qx=dx+(dw-q)/2,qy=dy+dh-q-(kind==='full'?6:0);x.fillStyle='#e0312f';x.fillRect(qx,qy,q,q);x.fillStyle='#fff';x.font='700 '+Math.round(q*.6)+'px Silkscreen, monospace';x.textAlign='center';x.fillText([...r.name][0].toUpperCase(),qx+q/2,qy+q/2+1)};
       if(!scores.length){x.font='700 18px Silkscreen, monospace';x.fillStyle='#d8d2dc';x.fillText('BELUM ADA',128,170)}
       else{[[1,46,212,'#d9dde6'],[0,128,192,'#ffd35c'],[2,210,212,'#ee9d62']].forEach(([i,cx,foot,col])=>{const r=scores[i];x.fillStyle='#2a2230';x.fillRect(cx-38,foot,76,256-foot);x.fillStyle=col;x.fillRect(cx-38,foot,76,3);x.textAlign='center';x.font='700 '+(i?16:22)+'px Silkscreen, monospace';x.fillText(String(i+1),cx,foot+(i?12:15));if(!r)return;{const lk=lookOf(r);if(lk){const fr=frameOf(podFrames(lk,i),i),dh=fr.height/fr.width*52;x.drawImage(fr,cx-26,foot-dh+1,52,dh)}else who(r,'full',cx-26,foot-98,52,98)}x.textAlign='center';x.fillStyle='#fff';x.font='700 11px Silkscreen, monospace';x.fillText(r.name.toUpperCase().slice(0,8),cx,foot+(i?25:33),70);x.fillStyle=col;x.font='700 12px Silkscreen, monospace';x.fillText(String(r.score),cx,foot+(i?37:51),70)});
@@ -2036,8 +2052,14 @@ const Hall=(()=>{
   }
   async function refresh(){const a=await Promise.allSettled([loadScores(),loadPhotos()]);paintWalls();return a}
   const body=()=>$h('#hall-body'),note=t=>{const d=document.createElement('div');d.className='hall-note';d.textContent=t;body().replaceChildren(d)};
-  function renderScore(enter){pods=[];if(!scores.length)return note('Belum ada skor. Jadi yang pertama di AWASS !!! ADA ACHAAA !!!');const me=myName(),top=scores[0].score||1,root=tag('div','lb'+(enter?' lb-enter':''));
-    const sub_=tag('div','lb-sub'),live=tag('span','lb-live');live.append(tag('i'),'LIVE');sub_.append(tag('span','',scores.length+' pemain · AWASS !!! ADA ACHAAA !!!'),live);
+  // Season tabs appear once Season 2 is open; before that the board counts down to the close.
+  function seasonBar(){const now=liveSeason();
+    if(now===1){const d=tag('div','lb-season-note');d.append(tag('b','','SEASON 1'),tag('span','',' ditutup 00.00 WIB · '+left()+' lagi'));return d}
+    const t=tag('div','lb-tabs');[1,2].forEach(n=>{const b=tag('button',n===season?'on':'');b.append(tag('b','','SEASON '+n),tag('small','',n<now?'SELESAI 🏆':'LIVE'));b.onclick=()=>{if(season===n)return;season=n;sig='';note('Memuat…');loadScores().then(()=>{if(season===n&&mode==='score')renderScore(true)}).catch(()=>note('Belum bisa memuat. Cek internet lalu coba lagi.'))};t.append(b)});return t}
+  function renderScore(enter){pods=[];const bar_=seasonBar();
+    if(!scores.length){const d=tag('div','hall-note',season>1?'Season '+season+' baru dimulai. Jadi yang pertama di AWASS !!! ADA ACHAAA !!!':'Belum ada skor. Jadi yang pertama di AWASS !!! ADA ACHAAA !!!');return body().replaceChildren(bar_,d)}
+    const me=myName(),top=scores[0].score||1,root=tag('div','lb'+(enter?' lb-enter':''));
+    const closed=season<liveSeason(),sub_=tag('div','lb-sub'),live=tag('span','lb-live'+(closed?' done':''));live.append(tag('i'),closed?'SELESAI':'LIVE');sub_.append(tag('span','',scores.length+' pemain · AWASS !!! ADA ACHAAA !!!'),live);root.append(bar_);
     const pod=tag('div','lb-pod');[1,0,2].forEach(i=>{const r=scores[i],c=tag('div','lb-p r'+(i+1)+(r?same(r.name,me)?' me':'':' empty')),card=tag('div','lb-card');card.append(tag('em','',i+1));if(r){c.append(podFace(r,i));card.append(tag('span','',r.name),tag('strong','',num(r.score)))}else card.append(tag('span','','Kosong'));c.append(card);pod.append(c)});
     const rowOf=(r,i,x='')=>{const row=tag('div','lb-row'+(same(r.name,me)?' me':'')+x),w=tag('div','lb-who'),n=tag('span');n.append(tag('u','',r.name));if(same(r.name,me))n.append(tag('i','lb-you','KAMU'));w.append(n,tag('small','',num(r.meters)+' m · '+num(r.coins)+' kaset'));const bar=tag('i','lb-bar');bar.style.width=Math.max(3,r.score/top*100)+'%';row.append(tag('b','',i+1),face(r,'head'),w,tag('strong','',num(r.score)),bar);return row};
     const list=tag('div','lb-list');scores.slice(3).forEach((r,i)=>list.append(rowOf(r,i+3)));root.append(sub_,pod);if(scores.length>3)root.append(list);
@@ -2045,11 +2067,11 @@ const Hall=(()=>{
   function renderGallery(){if(!photos.length)return note('Belum ada foto. Bikin di photobooth lalu tekan PAJANG DI GALERI.');const g=document.createElement('div');g.className='hall-grid';
     photos.forEach(p=>{const b=document.createElement('button'),im=document.createElement('img'),c=document.createElement('span');im.loading='lazy';im.alt='Foto '+p.names.join(', ');im.src=publicUrl(p.path);c.textContent=p.names.join(' · ');b.append(im,c);b.onclick=()=>view(p);g.append(b)});body().replaceChildren(g)}
   function view(p){viewing=p;$h('#hall-img').src=publicUrl(p.path);$h('#hall-cap').textContent=p.names.join(' · ');$h('#hall-view').hidden=false}
-  async function show(m){mode=m;$h('#hall').classList.toggle('is-score',m==='score');$h('#hall-t').textContent=m==='score'?'Papan Skor':'GALERI PHOTOBOOTH';$h('#hall-view').hidden=true;note('Memuat…');
+  async function show(m){mode=m;if(m==='score')season=liveSeason();$h('#hall').classList.toggle('is-score',m==='score');$h('#hall-t').textContent=m==='score'?'Papan Skor':'GALERI PHOTOBOOTH';$h('#hall-view').hidden=true;note('Memuat…');
     try{if(m==='score'){await loadScores();if(mode==='score')renderScore(true)}else{await loadPhotos();if(mode==='gallery')renderGallery()}paintWalls()}catch(e){note('Belum bisa memuat. Cek internet lalu coba lagi.')}}
   // Keep the board live: other players' results appear without reloading.
   let sig='';
-  async function tick(){if(document.hidden||!(isOpen||cur==='s-world'))return;try{await Promise.all([loadScores(),loadPhotos()]);const n=JSON.stringify([scores,photos.map(p=>p.id)]);if(n===sig)return;sig=n;paintWalls();if(isOpen&&$h('#hall-view').hidden){if(mode==='score')renderScore();else renderGallery()}}catch(e){}}
+  async function tick(){if(document.hidden||!(isOpen||cur==='s-world'))return;if(!isOpen&&season!==liveSeason()){season=liveSeason();sig=''}try{await Promise.all([loadScores(),loadPhotos()]);const n=JSON.stringify([scores,photos.map(p=>p.id)]);if(n===sig)return;sig=n;paintWalls();if(isOpen&&$h('#hall-view').hidden){if(mode==='score')renderScore();else renderGallery()}}catch(e){}}
   if(!still)setInterval(()=>{if(document.hidden)return;beat++;if(isOpen&&mode==='score'){pods.forEach(p=>{const q=p.cv.getContext('2d');q.clearRect(0,0,p.cv.width,p.cv.height);q.drawImage(frameOf(p.f,p.i),0,0)})}else if(!isOpen&&cur==='s-world'&&scores.length&&World.nearBoard&&World.nearBoard()){const w=World.hallTex();if(w)paintScore(w)}},190);
   setInterval(tick,5000);document.addEventListener('visibilitychange',tick);
   $h('#hall-x').onclick=()=>{isOpen=false;$h('#hall').hidden=true};
@@ -2060,7 +2082,7 @@ const Hall=(()=>{
     open(m){isOpen=true;$h('#hall').hidden=false;show(m)},
     async submit(meters,coins){const n=myName();if(!n)return 'NAMA INI TIDAK BISA DIPAKAI DI PAPAN SKOR';if(meters<=0)return '';
       const send=b=>api('/rest/v1/rpc/submit_score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}),base={p_name:n,p_meters:meters,p_coins:coins};
-      try{await send({...base,p_look:cleanLook(s)}).catch(e=>{if(e.message==='HTTP 404')return send(base);throw e});await loadScores();paintWalls();const rk=scores.findIndex(r=>same(r.name,n));return rk>=0?'PAPAN SKOR: PERINGKAT #'+(rk+1):'SKOR TERSIMPAN'}catch(e){return 'SKOR BELUM TERSIMPAN, CEK INTERNET'}},
+      try{await send({...base,p_look:cleanLook(s)}).catch(e=>{if(e.message==='HTTP 404')return send(base);throw e});season=liveSeason();await loadScores();paintWalls();const rk=scores.findIndex(r=>same(r.name,n));return rk>=0?(season>1?'SEASON '+season:'PAPAN SKOR')+': PERINGKAT #'+(rk+1):'SKOR TERSIMPAN'}catch(e){return 'SKOR BELUM TERSIMPAN, CEK INTERNET'}},
     async publish(cv,names){const c=document.createElement('canvas');c.width=720;c.height=1280;c.getContext('2d').drawImage(cv,0,0,720,1280);const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));if(!blob)throw new Error('encode');
       const id=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12)).toLowerCase(),path='strips/'+id+'.jpg';
       await api('/storage/v1/object/booth/'+path,{method:'POST',headers:{'Content-Type':'image/jpeg','x-upsert':'false'},body:blob});
