@@ -220,6 +220,11 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
 .lb-sub{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#c9c1cf;font-size:13px;font-weight:500}
 .lb-live{display:inline-flex;align-items:center;gap:6px;flex:none;color:#7ff0b4;font-size:12px;font-weight:700}.lb-live i{width:7px;height:7px;border-radius:50%;background:currentColor;animation:lbpulse 1.6s infinite}
 .lb-live.done{color:#ffd35c}.lb-live.done i{animation:none}
+.lb-top{display:flex;flex-direction:column;gap:9px;flex:none}
+.lb-champ{align-self:center;display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:4px 13px 4px 9px;border-radius:999px;background:linear-gradient(90deg,rgba(255,211,92,.22),rgba(255,211,92,.06));border:1px solid rgba(255,211,92,.55);font-size:13px;color:#fff;white-space:nowrap}
+.lb-champ em{font:700 10px Silkscreen,monospace;font-style:normal;color:#ffd35c;letter-spacing:.06em}
+.lb-champ .lb-av,.lb-champ .lb-init{width:24px;height:24px;flex:none;border-radius:6px}
+.lb-champ b{font-weight:800;overflow:hidden;text-overflow:ellipsis}.lb-champ span{color:#ffd35c;font-weight:700;font-size:12px}
 .lb-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:none}
 .lb-tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;border-radius:14px;background:rgba(255,255,255,.07);border:2px solid transparent;color:#c9c1cf;font:inherit}
 .lb-tabs button b{font:900 17px Archivo,system-ui,sans-serif;letter-spacing:.02em;color:#fff}.lb-tabs button small{font-size:11px;font-weight:700;letter-spacing:.06em}
@@ -2013,10 +2018,13 @@ const Hall=(()=>{
     const r=await api('/rest/v1/scores?select='+(hasLook?'name,score,meters,coins,look':'name,score,meters,coins')+(hasSeason?'&season=eq.'+want:'')+'&score=gt.0&order=score.desc,updated_at.asc&limit=100')
       .catch(e=>{if(e.message!=='HTTP 400')throw e;if(hasSeason){hasSeason=false;return loadScores()}if(hasLook){hasLook=false;return loadScores()}throw e});
     if(want===season&&r!==scores)scores=r||[];return scores};
+  // Champions of finished seasons (frozen, so each is fetched once).
+  const champs={},loadChamps=async()=>{const now=liveSeason();if(now<2||!hasSeason)return;
+    for(let n=1;n<now;n++){if(champs[n])continue;const r=await api('/rest/v1/scores?select=name,score'+(hasLook?',look':'')+'&season=eq.'+n+'&score=gt.0&order=score.desc,updated_at.asc&limit=1');if(r&&r[0])champs[n]=r[0]}};
   const left=()=>{const s=Math.max(0,Math.ceil((S2_AT-Date.now())/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),d=s%60;return (h?h+' jam ':'')+(h||m?m+' menit ':'')+d+' detik'};
   // Countdown ticks every second; when it hits zero the open board flips to the new season.
   setInterval(()=>{if(!isOpen||mode!=='score')return;const e=$h('.lb-season-note span');if(e)e.textContent=' ditutup 00.00 WIB · '+left()+' lagi';
-    if(e&&liveSeason()>1){season=liveSeason();sig='';loadScores().then(()=>{if(isOpen&&mode==='score')renderScore(true)}).catch(()=>{})}},1000);
+    if(e&&liveSeason()>1){season=liveSeason();sig='';Promise.all([loadScores(),loadChamps().catch(()=>{})]).then(()=>{if(isOpen&&mode==='score')renderScore(true)}).catch(()=>{})}},1000);
   const loadPhotos=async()=>{photos=await api('/rest/v1/photos?select=id,names,path,created_at&order=created_at.desc&limit=60')||[];return photos};
   const myName=()=>(name||'').replace(/[^\p{L}\p{N} ._'-]/gu,'').replace(/\s+/g,' ').trim().slice(0,16),same=(a,b)=>!!a&&!!b&&a.toLowerCase()===b.toLowerCase();
   // Avatars come from other visitors, so only known catalog ids and plain hex colors are drawn.
@@ -2055,7 +2063,9 @@ const Hall=(()=>{
   // Season tabs appear once Season 2 is open; before that the board counts down to the close.
   function seasonBar(){const now=liveSeason();
     if(now===1){const d=tag('div','lb-season-note');d.append(tag('b','','SEASON 1'),tag('span','',' ditutup 00.00 WIB · '+left()+' lagi'));return d}
-    const t=tag('div','lb-tabs');[1,2].forEach(n=>{const b=tag('button',n===season?'on':'');b.append(tag('b','','SEASON '+n),tag('small','',n<now?'SELESAI 🏆':'LIVE'));b.onclick=()=>{if(season===n)return;season=n;sig='';note('Memuat…');loadScores().then(()=>{if(season===n&&mode==='score')renderScore(true)}).catch(()=>note('Belum bisa memuat. Cek internet lalu coba lagi.'))};t.append(b)});return t}
+    const top_=tag('div','lb-top');
+    for(let n=now-1;n>=1;n--){const c=champs[n];if(!c)continue;const d=tag('div','lb-champ');d.append(tag('em','','🏆 CHAMPION S'+n),face(c,'head'),tag('b','',c.name),tag('span','',num(c.score)));top_.append(d)}
+    const t=tag('div','lb-tabs');top_.append(t);[1,2].forEach(n=>{const b=tag('button',n===season?'on':'');b.append(tag('b','','SEASON '+n),tag('small','',n<now?'SELESAI 🏆':'LIVE'));b.onclick=()=>{if(season===n)return;season=n;sig='';note('Memuat…');loadScores().then(()=>{if(season===n&&mode==='score')renderScore(true)}).catch(()=>note('Belum bisa memuat. Cek internet lalu coba lagi.'))};t.append(b)});return top_}
   function renderScore(enter){pods=[];const bar_=seasonBar();
     if(!scores.length){const d=tag('div','hall-note',season>1?'Season '+season+' baru dimulai. Jadi yang pertama di AWASS !!! ADA ACHAAA !!!':'Belum ada skor. Jadi yang pertama di AWASS !!! ADA ACHAAA !!!');return body().replaceChildren(bar_,d)}
     const me=myName(),top=scores[0].score||1,root=tag('div','lb'+(enter?' lb-enter':''));
@@ -2068,7 +2078,7 @@ const Hall=(()=>{
     photos.forEach(p=>{const b=document.createElement('button'),im=document.createElement('img'),c=document.createElement('span');im.loading='lazy';im.alt='Foto '+p.names.join(', ');im.src=publicUrl(p.path);c.textContent=p.names.join(' · ');b.append(im,c);b.onclick=()=>view(p);g.append(b)});body().replaceChildren(g)}
   function view(p){viewing=p;$h('#hall-img').src=publicUrl(p.path);$h('#hall-cap').textContent=p.names.join(' · ');$h('#hall-view').hidden=false}
   async function show(m){mode=m;if(m==='score')season=liveSeason();$h('#hall').classList.toggle('is-score',m==='score');$h('#hall-t').textContent=m==='score'?'Papan Skor':'GALERI PHOTOBOOTH';$h('#hall-view').hidden=true;note('Memuat…');
-    try{if(m==='score'){await loadScores();if(mode==='score')renderScore(true)}else{await loadPhotos();if(mode==='gallery')renderGallery()}paintWalls()}catch(e){note('Belum bisa memuat. Cek internet lalu coba lagi.')}}
+    try{if(m==='score'){await Promise.all([loadScores(),loadChamps().catch(()=>{})]);if(mode==='score')renderScore(true)}else{await loadPhotos();if(mode==='gallery')renderGallery()}paintWalls()}catch(e){note('Belum bisa memuat. Cek internet lalu coba lagi.')}}
   // Keep the board live: other players' results appear without reloading.
   let sig='';
   async function tick(){if(document.hidden||!(isOpen||cur==='s-world'))return;if(!isOpen&&season!==liveSeason()){season=liveSeason();sig=''}try{await Promise.all([loadScores(),loadPhotos()]);const n=JSON.stringify([scores,photos.map(p=>p.id)]);if(n===sig)return;sig=n;paintWalls();if(isOpen&&$h('#hall-view').hidden){if(mode==='score')renderScore();else renderGallery()}}catch(e){}}
