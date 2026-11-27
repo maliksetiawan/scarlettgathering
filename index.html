@@ -1931,7 +1931,7 @@ const Run=(()=>{
     const b=biomeAt(meters()),C=X.camera;X.sky.set(b.sky);X.scene.background.lerp(X.sky,Math.min(1,dt*1.5));X.scene.fog.color.copy(X.scene.background);X.hemi.intensity+=((b.night?.5:.82)-X.hemi.intensity)*Math.min(1,dt*1.5);X.sun.intensity+=((b.night?.34:.72)-X.sun.intensity)*Math.min(1,dt*1.5);
     $r('#r-b').textContent=b.n;X.world.position.z=dist;
     const front=state==='intro'||state==='caught',k=front?Math.min(1,dt*(state==='caught'?5:30)):Math.min(1,dt*4);
-    if(front){X.camP.set(px,31,-82);X.camL.set(px,23,16)}else{X.camP.set(px*.84,61+py*.86,96);X.camL.set(px*.92,17+py*.74,-92)}
+    if(front){X.camP.set(px,31,-82);X.camL.set(px,23,16)}else{X.camP.set(px*.45,86+py*.6,110);X.camL.set(px*.4,py*.45,-135)}   // high chase cam: all three lanes in view, runner in the lower third
     if(T<.05){C.position.copy(X.camP);X.look=X.camL.clone()}else{C.position.lerp(X.camP,k);X.look.lerp(X.camL,k)}C.lookAt(X.look);C.rotation.z+=camRoll;if(state==='run'){const fov=64+Math.min(11,(dist/M2U)*.008)+(roller>0?7:0);if(Math.abs(C.fov-fov)>.05){C.fov+=(fov-C.fov)*Math.min(1,dt*3);C.updateProjectionMatrix()}}
     objs.forEach(o=>{if(o.kind!=='ob'&&!o.got)o.m.position.y=o.y+Math.sin(T*5+o.z)*1.5});
     const P=X.pr,A=X.ar,camFront=C.position.z<0,tilt=lean;
