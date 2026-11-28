@@ -346,7 +346,7 @@ h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacin
   <div class="bb-body bb-center" id="bb-cam">
     <div class="bb-wrap"><div class="bb-stage">
       <video id="bb-vid" playsinline muted autoplay></video>
-      <img class="bb-twb" src="assets/twibbon.webp" alt="" draggable="false">
+      <img class="bb-twb" src="assets/twibbon-v2.webp" alt="" draggable="false">
       <div class="bb-msg" id="bb-msg" hidden><p id="bb-msg-t"></p><button class="btn" id="bb-retry" hidden>COBA LAGI</button></div>
       <div class="bb-cd" id="bb-cd"></div><div class="bb-flash" id="bb-flash"></div>
     </div></div>
@@ -1258,7 +1258,7 @@ const World=(()=>{
       [-17,17].forEach(o=>box(3,8,3,'#5e3d26',bx+o,4,bz));
       box(tw+4,th+4,2,'#f28fb4',bx,8+th/2,bz-1.2);box(tw-2,th-2,.6,'#fde3ec',bx,8+th/2,bz-.1,{cast:false});
       const c=document.createElement('canvas');c.width=270;c.height=484;const t=tex(c,false);
-      const im=new Image();im.onload=()=>{c.getContext('2d').drawImage(im,0,0,c.width,c.height);t.needsUpdate=true};im.src='assets/twibbon.webp';
+      const im=new Image();im.onload=()=>{c.getContext('2d').drawImage(im,0,0,c.width,c.height);t.needsUpdate=true};im.src='assets/twibbon-v2.webp';
       add(new T3.PlaneGeometry(tw,th),new T3.MeshBasicMaterial({map:t,transparent:true,alphaTest:.4}),bx,8+th/2,bz+.4,{cast:false});
       add(new T3.PlaneGeometry(40,10),new T3.MeshBasicMaterial({map:tex(textCanvas(256,64,'#f28fb4','#ffffff','PHOTOBOOTH',30),false)}),bx,14+th,bz+.2,{cast:false});
       box(1.5,46,1.5,'#2a2a2e',bx+32,23,bz+14);box(8,1,8,'#2a2a2e',bx+32,.5,bz+14);
@@ -1585,7 +1585,7 @@ $('#b-world').onclick=()=>go('s-world');
 /* ================= PHOTOBOOTH: live camera framed by the event twibbon ================= */
 const Booth=(()=>{
   const OW=1080,OH=1935,$b=q=>document.querySelector(q),vid=$b('#bb-vid');
-  const twb=new Image();twb.src='assets/twibbon.webp';
+  const twb=new Image();twb.src='assets/twibbon-v2.webp';
   const twbReady=new Promise(r=>{if(twb.complete)r();else{twb.onload=twb.onerror=()=>r()}});
   let from='s-world',step='cam',stream=null,facing='user',camRun=0,shotRun=0,shooting=false,blob=null,url='',flash=false,torchOK=false;
   const track=()=>stream&&stream.getVideoTracks()[0];
